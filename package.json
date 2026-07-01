@@ -1,0 +1,31 @@
+{
+  "name": "global_trust_layer",
+  "version": "1.0.0",
+  "description": "> Trust infrastructure for cross-border payments and freelance work, built on Arbitrum.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shravani-Sawant28/Global_Trust_Layer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Shravani-Sawant28/Global_Trust_Layer/issues"
+  },
+  "homepage": "https://github.com/Shravani-Sawant28/Global_Trust_Layer#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.28.6"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1",
+    "dotenv": "^17.4.2"
+  }
+}
