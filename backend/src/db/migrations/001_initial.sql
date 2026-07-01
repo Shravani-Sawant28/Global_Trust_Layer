@@ -1,0 +1,2 @@
+-- Migrations initial setup placeholder
+-- Creates jobs, disputes, wallets, milestones tables
