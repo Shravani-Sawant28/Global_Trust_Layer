@@ -1,0 +1,73 @@
+# ==========================
+# Rust
+# ==========================
+/target/
+Cargo.lock
+
+# Uncomment the next line if this is a binary application.
+# For smart contract libraries, keeping Cargo.lock ignored is common.
+# !Cargo.lock
+
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.*
+!.env.example
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/
+
+# ==========================
+# IntelliJ / CLion
+# ==========================
+.idea/
+*.iml
+
+# ==========================
+# JetBrains Rust
+# ==========================
+*.rs.bk
+
+# ==========================
+# macOS
+# ==========================
+.DS_Store
+
+# ==========================
+# Windows
+# ==========================
+Thumbs.db
+Desktop.ini
+
+# ==========================
+# Logs
+# ==========================
+*.log
+
+# ==========================
+# Generated Documentation
+# ==========================
+/target/doc/
+
+# ==========================
+# Temporary Files
+# ==========================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ==========================
+# Cargo Expand Output
+# ==========================
+expanded.rs
+
+# ==========================
+# Stylus Build Artifacts (if generated)
+# ==========================
+*.wasm
+*.wat
