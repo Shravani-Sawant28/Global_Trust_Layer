@@ -1,1 +1,343 @@
-[]
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      { "name": "_usdc",       "type": "address", "internalType": "address" },
+      { "name": "_arbiter",    "type": "address", "internalType": "address" },
+      { "name": "_reputation", "type": "address", "internalType": "address" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createJob",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "_freelancer",             "type": "address",   "internalType": "address"  },
+      { "name": "_title",                  "type": "string",    "internalType": "string"   },
+      { "name": "_milestoneDescriptions",  "type": "string[]",  "internalType": "string[]" },
+      { "name": "_milestoneAmounts",       "type": "uint256[]", "internalType": "uint256[]"},
+      { "name": "_durationSeconds",        "type": "uint256",   "internalType": "uint256"  }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "fundJob",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "markDelivered",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" },
+      { "name": "ipfsHash",       "type": "string",  "internalType": "string"  }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "releaseMilestone",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "refundClient",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "autoRelease",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "raiseDispute",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" },
+      { "name": "reason",         "type": "string",  "internalType": "string"  }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "resolveDispute",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" },
+      { "name": "clientBps",      "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "agreeToSplit",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" },
+      { "name": "clientBps",      "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "setFeeRecipient",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "_newRecipient", "type": "address", "internalType": "address" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getJob",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "jobId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [
+      { "name": "id",             "type": "uint256", "internalType": "uint256"              },
+      { "name": "client",         "type": "address", "internalType": "address"              },
+      { "name": "freelancer",     "type": "address", "internalType": "address"              },
+      { "name": "totalAmount",    "type": "uint256", "internalType": "uint256"              },
+      { "name": "releasedAmount", "type": "uint256", "internalType": "uint256"              },
+      { "name": "status",         "type": "uint8",   "internalType": "enum EscrowFactory.JobStatus" },
+      { "name": "title",          "type": "string",  "internalType": "string"               },
+      { "name": "createdAt",      "type": "uint256", "internalType": "uint256"              },
+      { "name": "deadline",       "type": "uint256", "internalType": "uint256"              }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getMilestone",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256" },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct EscrowFactory.Milestone",
+        "components": [
+          { "name": "description",          "type": "string",  "internalType": "string"  },
+          { "name": "amount",               "type": "uint256", "internalType": "uint256" },
+          { "name": "delivered",            "type": "bool",    "internalType": "bool"    },
+          { "name": "released",             "type": "bool",    "internalType": "bool"    },
+          { "name": "late",                 "type": "bool",    "internalType": "bool"    },
+          { "name": "ipfsHash",             "type": "string",  "internalType": "string"  },
+          { "name": "deliveredAt",          "type": "uint256", "internalType": "uint256" },
+          { "name": "disputeDeadline",      "type": "uint256", "internalType": "uint256" },
+          { "name": "disputeStatus",        "type": "uint8",   "internalType": "enum EscrowFactory.DisputeStatus" },
+          { "name": "disputeReason",        "type": "string",  "internalType": "string"  },
+          { "name": "clientProposalBps",    "type": "uint256", "internalType": "uint256" },
+          { "name": "freelancerProposalBps","type": "uint256", "internalType": "uint256" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getMilestoneCount",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "jobId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "getClientJobs",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "client", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256[]", "internalType": "uint256[]" }]
+  },
+  {
+    "type": "function",
+    "name": "getFreelancerJobs",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "freelancer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256[]", "internalType": "uint256[]" }]
+  },
+  {
+    "type": "function",
+    "name": "getContractBalance",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "jobCounter",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "arbiter",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }]
+  },
+  {
+    "type": "function",
+    "name": "feeRecipient",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }]
+  },
+  {
+    "type": "function",
+    "name": "usdc",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }]
+  },
+  {
+    "type": "event",
+    "name": "JobCreated",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",       "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "client",      "type": "address", "internalType": "address", "indexed": true  },
+      { "name": "freelancer",  "type": "address", "internalType": "address", "indexed": true  },
+      { "name": "totalAmount", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "title",       "type": "string",  "internalType": "string",  "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JobFunded",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",    "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "amount",   "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "deadline", "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MilestoneDelivered",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "ipfsHash",       "type": "string",  "internalType": "string",  "indexed": false },
+      { "name": "late",           "type": "bool",    "internalType": "bool",    "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MilestoneReleased",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",              "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex",     "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "amountToFreelancer", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "fee",                "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JobCompleted",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId", "type": "uint256", "internalType": "uint256", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "ClientRefunded",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "amount",         "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "AutoReleased",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "amount",         "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeRaised",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "raisedBy",       "type": "address", "internalType": "address", "indexed": false },
+      { "name": "reason",         "type": "string",  "internalType": "string",  "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeResolved",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",            "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex",   "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "clientBps",        "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "clientAmount",     "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "freelancerAmount", "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "SplitProposed",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "proposer",       "type": "address", "internalType": "address", "indexed": false },
+      { "name": "clientBps",      "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "SplitAgreed",
+    "anonymous": false,
+    "inputs": [
+      { "name": "jobId",          "type": "uint256", "internalType": "uint256", "indexed": true  },
+      { "name": "milestoneIndex", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "clientBps",      "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  }
+]

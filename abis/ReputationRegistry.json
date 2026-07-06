@@ -1,1 +1,174 @@
-[]
+[
+  {
+    "type": "constructor",
+    "inputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setEscrowFactory",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "_escrow", "type": "address", "internalType": "address" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "recordCompletion",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "client",     "type": "address", "internalType": "address" },
+      { "name": "freelancer", "type": "address", "internalType": "address" },
+      { "name": "jobId",      "type": "uint256", "internalType": "uint256" },
+      { "name": "amount",     "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "recordAutoRelease",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "freelancer", "type": "address", "internalType": "address" },
+      { "name": "jobId",      "type": "uint256", "internalType": "uint256" },
+      { "name": "amount",     "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "recordGhosting",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "freelancer", "type": "address", "internalType": "address" },
+      { "name": "jobId",      "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "recordLateDelivery",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "freelancer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "recordDisputeRaised",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "client",     "type": "address", "internalType": "address" },
+      { "name": "freelancer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "recordDisputeLoss",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "loser", "type": "address", "internalType": "address" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getTrustScore",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "wallet", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "getPassport",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "wallet", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct ReputationRegistry.TrustPassport",
+        "components": [
+          { "name": "wallet",            "type": "address", "internalType": "address" },
+          { "name": "trustScore",        "type": "uint256", "internalType": "uint256" },
+          { "name": "totalJobs",         "type": "uint256", "internalType": "uint256" },
+          { "name": "completedJobs",     "type": "uint256", "internalType": "uint256" },
+          { "name": "disputesInvolved",  "type": "uint256", "internalType": "uint256" },
+          { "name": "disputesLost",      "type": "uint256", "internalType": "uint256" },
+          { "name": "lateDeliveries",    "type": "uint256", "internalType": "uint256" },
+          { "name": "ghostingCount",     "type": "uint256", "internalType": "uint256" },
+          { "name": "totalVolume",       "type": "uint256", "internalType": "uint256" },
+          { "name": "memberSince",       "type": "uint256", "internalType": "uint256" },
+          { "name": "lastUpdated",       "type": "uint256", "internalType": "uint256" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getJobHistory",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "wallet", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256[]", "internalType": "uint256[]" }]
+  },
+  {
+    "type": "function",
+    "name": "isNewWallet",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "wallet", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }]
+  },
+  {
+    "type": "function",
+    "name": "escrowFactory",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }]
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }]
+  },
+  {
+    "type": "event",
+    "name": "PassportCreated",
+    "anonymous": false,
+    "inputs": [
+      { "name": "wallet",    "type": "address", "internalType": "address", "indexed": true  },
+      { "name": "timestamp", "type": "uint256", "internalType": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "ScoreChanged",
+    "anonymous": false,
+    "inputs": [
+      { "name": "wallet",   "type": "address", "internalType": "address", "indexed": true  },
+      { "name": "delta",    "type": "int256",  "internalType": "int256",  "indexed": false },
+      { "name": "newScore", "type": "uint256", "internalType": "uint256", "indexed": false },
+      { "name": "reason",   "type": "string",  "internalType": "string",  "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "EscrowFactorySet",
+    "anonymous": false,
+    "inputs": [
+      { "name": "escrowFactory", "type": "address", "internalType": "address", "indexed": false }
+    ]
+  }
+]
