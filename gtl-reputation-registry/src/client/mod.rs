@@ -1,4 +1,4 @@
-use stylus_sdk::alloy_primitives::{Address, U256};
+use stylus_sdk::alloy_primitives::U256;
 use crate::constants::*;
 
 /// Pure scoring logic for client-side events. No storage access here —

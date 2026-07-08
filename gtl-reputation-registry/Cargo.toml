@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-stylus-sdk = "0.9"
-alloy-primitives = "0.8"
-alloy-sol-types = "0.8"
+stylus-sdk = "0.10.7"
+alloy-primitives = "1.6.0"
+alloy-sol-types = "1.6.0"
 
 [features]
 export-abi = ["stylus-sdk/export-abi"]

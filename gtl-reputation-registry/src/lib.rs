@@ -4,7 +4,8 @@ extern crate alloc;
 pub mod constants;
 pub mod errors;
 pub mod events;
-pub mod types;
+pub mod 
+types;
 pub mod storage;
 pub mod access;
 pub mod client;
@@ -14,7 +15,6 @@ pub mod juror;
 use alloc::string::String;
 use stylus_sdk::{
     alloy_primitives::{Address, U256},
-    block, evm, msg,
     prelude::*,
 };
 
@@ -40,12 +40,12 @@ impl ReputationRegistry {
     /// Run once, manually, right after deployment.
     pub fn init(&mut self) {
         if self.owner.get() == Address::ZERO {
-            self.owner.set(msg::sender());
+            self.owner.set(self.vm().msg_sender());
         }
     }
 
     pub fn set_escrow_factory(&mut self, escrow: Address) -> Result<(), ReputationError> {
-        if msg::sender() != self.owner.get() {
+        if self.vm().msg_sender() != self.owner.get() {
             return Err(ReputationError::OnlyOwner(OnlyOwner {}));
         }
         if escrow == Address::ZERO {
@@ -55,7 +55,7 @@ impl ReputationRegistry {
             return Err(ReputationError::AlreadySet(AlreadySet {}));
         }
         self.escrow_factory.set(escrow);
-        evm::log(EscrowFactorySet { escrowFactory: escrow });
+        self.vm().log(EscrowFactorySet { escrowFactory: escrow });
         Ok(())
     }
 
@@ -67,37 +67,43 @@ impl ReputationRegistry {
         freelancer_addr: Address,
         amount: U256,
     ) -> Result<(), ReputationError> {
-        access::require_escrow(self.escrow_factory.get())?;
+        access::require_escrow(self.escrow_factory.get(), self.vm().msg_sender())?;
 
         self.init_client(client_addr);
         self.init_freelancer(freelancer_addr);
 
+        let client_new_score;
         {
+            let ts = U256::from(self.vm().block_timestamp());
             let mut c = self.client_passports.setter(client_addr);
             let v = c.jobs_completed.get(); c.jobs_completed.set(v + U256::from(1));
             let v = c.total_volume.get(); c.total_volume.set(v + amount);
             let new_score = client::score_after_completion(c.trust_score.get());
             c.trust_score.set(new_score);
-            c.last_updated.set(U256::from(block::timestamp()));
+            c.last_updated.set(ts);
+            client_new_score = new_score;
         }
-        evm::log(ScoreIncreased {
+        self.vm().log(ScoreIncreased {
             wallet: client_addr, points: U256::from(COMPLETION_REWARD),
-            newScore: self.client_passports.get(client_addr).trust_score.get(),
+            newScore: client_new_score,
             reason: String::from("job completed"),
         });
 
+        let freelancer_new_score;
         {
+            let ts = U256::from(self.vm().block_timestamp());
             let mut f = self.freelancer_passports.setter(freelancer_addr);
             let v = f.jobs_completed.get(); f.jobs_completed.set(v + U256::from(1));
             let v = f.on_time_deliveries.get(); f.on_time_deliveries.set(v + U256::from(1));
             let v = f.total_volume.get(); f.total_volume.set(v + amount);
             let new_score = freelancer::score_after_completion(f.trust_score.get());
             f.trust_score.set(new_score);
-            f.last_updated.set(U256::from(block::timestamp()));
+            f.last_updated.set(ts);
+            freelancer_new_score = new_score;
         }
-        evm::log(ScoreIncreased {
+        self.vm().log(ScoreIncreased {
             wallet: freelancer_addr, points: U256::from(COMPLETION_REWARD),
-            newScore: self.freelancer_passports.get(freelancer_addr).trust_score.get(),
+            newScore: freelancer_new_score,
             reason: String::from("job completed"),
         });
 
@@ -105,26 +111,28 @@ impl ReputationRegistry {
     }
 
     pub fn record_late_delivery(&mut self, freelancer_addr: Address) -> Result<(), ReputationError> {
-        access::require_escrow(self.escrow_factory.get())?;
+        access::require_escrow(self.escrow_factory.get(), self.vm().msg_sender())?;
         self.init_freelancer(freelancer_addr);
 
+        let ts = U256::from(self.vm().block_timestamp());
         let mut f = self.freelancer_passports.setter(freelancer_addr);
         let v = f.late_deliveries.get(); f.late_deliveries.set(v + U256::from(1));
         let new_score = freelancer::score_after_late_delivery(f.trust_score.get());
         f.trust_score.set(new_score);
-        f.last_updated.set(U256::from(block::timestamp()));
+        f.last_updated.set(ts);
         Ok(())
     }
 
     pub fn record_ghosting(&mut self, freelancer_addr: Address) -> Result<(), ReputationError> {
-        access::require_escrow(self.escrow_factory.get())?;
+        access::require_escrow(self.escrow_factory.get(), self.vm().msg_sender())?;
         self.init_freelancer(freelancer_addr);
 
+        let ts = U256::from(self.vm().block_timestamp());
         let mut f = self.freelancer_passports.setter(freelancer_addr);
         let v = f.ghosting_count.get(); f.ghosting_count.set(v + U256::from(1));
         let new_score = freelancer::score_after_ghosting(f.trust_score.get());
         f.trust_score.set(new_score);
-        f.last_updated.set(U256::from(block::timestamp()));
+        f.last_updated.set(ts);
         Ok(())
     }
 
@@ -135,7 +143,7 @@ impl ReputationRegistry {
         client_addr: Address,
         freelancer_addr: Address,
     ) -> Result<(), ReputationError> {
-        access::require_escrow(self.escrow_factory.get())?;
+        access::require_escrow(self.escrow_factory.get(), self.vm().msg_sender())?;
         self.init_client(client_addr);
         self.init_freelancer(freelancer_addr);
 
@@ -160,7 +168,7 @@ impl ReputationRegistry {
         client_bps: U256,
         resolution_type: u8,
     ) -> Result<(), ReputationError> {
-        access::require_escrow(self.escrow_factory.get())?;
+        access::require_escrow(self.escrow_factory.get(), self.vm().msg_sender())?;
         if resolution_type > ResolutionType::TIMEOUT {
             return Err(ReputationError::InvalidResolutionType(InvalidResolutionType {}));
         }
@@ -173,17 +181,19 @@ impl ReputationRegistry {
         }
 
         if freelancer::freelancer_was_at_fault(client_bps) {
+            let ts = U256::from(self.vm().block_timestamp());
             let mut f = self.freelancer_passports.setter(freelancer_addr);
             let v = f.disputes_lost.get(); f.disputes_lost.set(v + U256::from(1));
             let new_score = freelancer::score_after_dispute_loss(f.trust_score.get());
             f.trust_score.set(new_score);
-            f.last_updated.set(U256::from(block::timestamp()));
+            f.last_updated.set(ts);
         } else if freelancer::client_was_at_fault(client_bps) {
+            let ts = U256::from(self.vm().block_timestamp());
             let mut c = self.client_passports.setter(client_addr);
             let v = c.disputes_lost.get(); c.disputes_lost.set(v + U256::from(1));
             let new_score = client::score_after_dispute_loss(c.trust_score.get());
             c.trust_score.set(new_score);
-            c.last_updated.set(U256::from(block::timestamp()));
+            c.last_updated.set(ts);
         }
         // Anything between the two thresholds = genuine 50/50-ish split, nobody penalized.
 
@@ -194,24 +204,27 @@ impl ReputationRegistry {
 
     /// Called once per juror after finalize_jury() determines the majority outcome.
     pub fn record_juror_vote(&mut self, juror_addr: Address, was_correct: bool) -> Result<(), ReputationError> {
-        access::require_escrow(self.escrow_factory.get())?;
+        access::require_escrow(self.escrow_factory.get(), self.vm().msg_sender())?;
         self.init_juror(juror_addr);
 
-        let mut j = self.juror_passports.setter(juror_addr);
-        let v = j.cases_handled.get(); j.cases_handled.set(v + U256::from(1));
+        let ts = U256::from(self.vm().block_timestamp());
+        {
+            let mut j = self.juror_passports.setter(juror_addr);
+            let v = j.cases_handled.get(); j.cases_handled.set(v + U256::from(1));
 
-        if was_correct {
-            let v = j.correct_votes.get(); j.correct_votes.set(v + U256::from(1));
-            let new_score = juror::score_after_correct_vote(j.trust_score.get());
-            j.trust_score.set(new_score);
-        } else {
-            let v = j.wrong_votes.get(); j.wrong_votes.set(v + U256::from(1));
-            let new_score = juror::score_after_wrong_vote(j.trust_score.get());
-            j.trust_score.set(new_score);
-        }
-        j.last_updated.set(U256::from(block::timestamp()));
+            if was_correct {
+                let v = j.correct_votes.get(); j.correct_votes.set(v + U256::from(1));
+                let new_score = juror::score_after_correct_vote(j.trust_score.get());
+                j.trust_score.set(new_score);
+            } else {
+                let v = j.wrong_votes.get(); j.wrong_votes.set(v + U256::from(1));
+                let new_score = juror::score_after_wrong_vote(j.trust_score.get());
+                j.trust_score.set(new_score);
+            }
+            j.last_updated.set(ts);
+        } // drop j before logging
 
-        evm::log(JurorVoteRecorded { juror: juror_addr, wasCorrect: was_correct });
+        self.vm().log(JurorVoteRecorded { juror: juror_addr, wasCorrect: was_correct });
         Ok(())
     }
 
@@ -250,27 +263,34 @@ impl ReputationRegistry {
 impl ReputationRegistry {
     fn init_client(&mut self, wallet: Address) {
         if self.client_passports.get(wallet).member_since.get().is_zero() {
-            let mut c = self.client_passports.setter(wallet);
-            c.trust_score.set(U256::from(STARTING_SCORE));
-            c.member_since.set(U256::from(block::timestamp()));
-            evm::log(PassportCreated { wallet, timestamp: U256::from(block::timestamp()) });
+            let ts = U256::from(self.vm().block_timestamp());
+            {
+                let mut c = self.client_passports.setter(wallet);
+                c.trust_score.set(U256::from(STARTING_SCORE));
+                c.member_since.set(ts);
+            } // drop mutable borrow before logging
+            self.vm().log(PassportCreated { wallet, timestamp: ts });
         }
     }
 
     fn init_freelancer(&mut self, wallet: Address) {
         if self.freelancer_passports.get(wallet).member_since.get().is_zero() {
-            let mut f = self.freelancer_passports.setter(wallet);
-            f.trust_score.set(U256::from(STARTING_SCORE));
-            f.member_since.set(U256::from(block::timestamp()));
-            evm::log(PassportCreated { wallet, timestamp: U256::from(block::timestamp()) });
+            let ts = U256::from(self.vm().block_timestamp());
+            {
+                let mut f = self.freelancer_passports.setter(wallet);
+                f.trust_score.set(U256::from(STARTING_SCORE));
+                f.member_since.set(ts);
+            } // drop mutable borrow before logging
+            self.vm().log(PassportCreated { wallet, timestamp: ts });
         }
     }
 
     fn init_juror(&mut self, wallet: Address) {
         if self.juror_passports.get(wallet).member_since.get().is_zero() {
+            let ts = U256::from(self.vm().block_timestamp());
             let mut j = self.juror_passports.setter(wallet);
             j.trust_score.set(U256::from(STARTING_SCORE));
-            j.member_since.set(U256::from(block::timestamp()));
+            j.member_since.set(ts);
         }
     }
 }
