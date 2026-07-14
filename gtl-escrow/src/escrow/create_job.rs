@@ -30,7 +30,7 @@ pub fn create_job(
 
     // ---------------- Validation ----------------
 
-    if freelancer == Address::ZERO || freelancer == caller {
+    if freelancer == caller {
         return Err(EscrowError::InvalidAddress(InvalidAddress {}));
     }
 

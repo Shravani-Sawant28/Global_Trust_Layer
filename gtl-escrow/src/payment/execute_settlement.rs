@@ -14,7 +14,7 @@ use crate::{
         Unauthorized,
     },
     interfaces::erc20::IERC20,
-    types::{DisputeStage, JobStatus},
+    types::DisputeStage,
     EscrowContract,
 };
 
@@ -51,7 +51,6 @@ pub fn execute_settlement(
 
     let client: Address;
     let freelancer: Address;
-    let total_amount: U256;
     let released_amount: U256;
 
     {
@@ -72,7 +71,6 @@ pub fn execute_settlement(
         client = job.client.get();
         freelancer = job.freelancer.get();
 
-        total_amount = job.total_amount.get();
         released_amount = job.released_amount.get();
     }
 
@@ -112,63 +110,72 @@ pub fn execute_settlement(
 
     let usdc = IERC20::new(contract.usdc_token.get());
 
-    let call = Call::new_mutating(contract);
+    // -------- Client Transfer --------
+    {
+        let call = Call::new_mutating(contract);
 
-    let ok = usdc
-    .transfer(
-        contract.vm(),
-        call,
-        client,
-        client_amount,
-    )
-    .map_err(|_| EscrowError::Unauthorized(
-        Unauthorized {},
-    ))?;
+        let ok = usdc
+            .transfer(
+                contract.vm(),
+                call,
+                client,
+                client_amount,
+            )
+            .map_err(|_| EscrowError::Unauthorized(
+                Unauthorized {},
+            ))?;
 
-    if !ok {
-        return Err(EscrowError::Unauthorized(
-            Unauthorized {},
-        ));
+        if !ok {
+            return Err(EscrowError::Unauthorized(
+                Unauthorized {},
+            ));
+        }
     }
 
-    //Freelancer transfer
-    let call = Call::new_mutating(contract);
+    // -------- Freelancer Transfer --------
+    {
+        let call = Call::new_mutating(contract);
 
-    let ok = usdc
-        .transfer(
-            contract.vm(),
-            call,
-            freelancer,
-            freelancer_amount,
-        )
-        .map_err(|_| EscrowError::Unauthorized(
-            Unauthorized {},
-    ))?;
+        let ok = usdc
+            .transfer(
+                contract.vm(),
+                call,
+                freelancer,
+                freelancer_amount,
+            )
+            .map_err(|_| EscrowError::Unauthorized(
+                Unauthorized {},
+            ))?;
 
-    if !ok {
-        return Err(EscrowError::Unauthorized(
-            Unauthorized {},
-        ));
+        if !ok {
+            return Err(EscrowError::Unauthorized(
+                Unauthorized {},
+            ));
+        }
     }
 
-    //Platform fee transfer
-    let call = Call::new_mutating(contract);
+    // -------- Platform Fee --------
+    {
+        let fee_recipient = contract.fee_recipient.get();
 
-    let ok = usdc
-        .transfer(
-            contract.vm(),
-            call,
-            contract.fee_recipient.get(),
-            platform_fee,
-        )
-        .map_err(|_| EscrowError::Unauthorized(
-            Unauthorized {},
-    ))?;
+        let call = Call::new_mutating(contract);
 
-    if !ok {
-        return Err(EscrowError::Unauthorized(
-            Unauthorized {},
-        ));
+        let ok = usdc
+            .transfer(
+                contract.vm(),
+                call,
+                fee_recipient,
+                platform_fee,
+            )
+            .map_err(|_| EscrowError::Unauthorized(
+                Unauthorized {},
+            ))?;
+
+        if !ok {
+            return Err(EscrowError::Unauthorized(
+                Unauthorized {},
+            ));
+        }
     }
 
     // ---------------- Update milestone & job ----------------

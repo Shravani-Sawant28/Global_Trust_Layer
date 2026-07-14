@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRole } from '@/hooks/useRole';
 import { useApp } from '@/context/AppContext';
-import { useProfile } from '@/hooks/useReputation';
+import {
+  useClientScore,
+  useFreelancerScore,
+} from '@/hooks/useReputation';
 import { PageLoader } from '@/components/ui/Loader';
 import Sidebar from '@/components/layout/Sidebar';
 import StatsCard from '@/components/dashboard/StatsCard';
@@ -48,8 +51,14 @@ export default function DashboardPage() {
   }, [ready, authenticated, isHydrated, role, router]);
 
   // Reputation (from mock or on-chain)
-  const { data: reputationData } = useProfile(walletAddress);
-  const trustScore = reputationData?.trustScore || profile?.trustScore || 0;
+  const { data: clientScore } = useClientScore(walletAddress);
+  const { data: freelancerScore } = useFreelancerScore(walletAddress);
+
+  const trustScore = Number(
+    isClient
+      ? (clientScore ?? profile?.trustScore ?? 0)
+      : (freelancerScore ?? profile?.trustScore ?? 0)
+  );
 
   if (!ready || !isHydrated) return <PageLoader />;
   if (!authenticated || !role) return null;

@@ -55,26 +55,3 @@ export function showTxToast(type, txHash, message) {
   }
 }
 
-/** 
- * CurrencyToggle — ETH ↔ USDC selector used on Post a Job form.
- */
-export function CurrencyToggle({ value, onChange }) {
-  return (
-    <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-1">
-      {['ETH', 'USDC'].map((c) => (
-        <button
-          key={c}
-          type="button"
-          onClick={() => onChange(c)}
-          className={`rounded-md px-4 py-1.5 text-sm font-semibold transition-all ${
-            value === c
-              ? 'bg-white dark:bg-gray-900 text-brand-600 dark:text-brand-400 shadow-card'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
-        >
-          {c}
-        </button>
-      ))}
-    </div>
-  );
-}

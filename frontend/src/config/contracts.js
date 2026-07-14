@@ -1,0 +1,12 @@
+export const CONTRACTS = {
+    ESCROW: "0xe951f2d944ed61db297a8a61c84891f4b1afd40d",
+
+    REPUTATION:
+        "0x40c6b2CCb51012Adb50E70efdc5d1d35223F5421",
+
+    USDC:
+        "0xD453DF7A01aef0a52589b492d222Edf8EEdAd897",
+
+    GTL:
+        "0xBEd8C0ac85D4C9C9eaB629B375abcb6eB798FAbe",
+};

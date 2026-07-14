@@ -1,20 +1,24 @@
-import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
-import { parseEther, parseUnits } from 'viem';
-import { CONTRACT_ADDRESSES, ESCROW_FACTORY_ABI } from '@/lib/contracts';
-import { toUnixTimestamp } from '@/lib/utils';
+import {
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useReadContract,
+} from "wagmi";
+import { CONTRACTS } from "@/config/contracts";
+import { EscrowABI } from "@/abi/EscrowABI";
 
 /**
- * useEscrow — wagmi hooks for all EscrowFactory contract interactions.
- *
- * All write functions are stubs that will call the real contract once
- * NEXT_PUBLIC_ESCROW_FACTORY_ADDRESS is set in .env.local.
- *
- * Returns both the write trigger function and the transaction state
- * so calling components can show pending/success/error UI.
+ * useEscrow — wagmi hooks for interacting with the GTL Stylus Escrow contract.
  */
 export function useCreateEscrow() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const {
+    data: receipt,
+    isLoading: isConfirming,
+    isSuccess,
+  } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   /**
    * createEscrow — locks funds and creates an escrow on-chain.
@@ -27,126 +31,226 @@ export function useCreateEscrow() {
    * @param {string}   params.totalAmount      - Total budget as string (e.g. '1.5')
    */
   const createEscrow = ({
-    freelancer = '0x0000000000000000000000000000000000000000',
-    deadline,
-    milestoneAmounts = [],
-    currency = 'ETH',
-    totalAmount,
-  }) => {
-    const deadlineTs = BigInt(toUnixTimestamp(deadline));
-
-    // Convert amounts to wei/micro-USDC
-    const milestonesBigInt = milestoneAmounts.map((a) =>
-      currency === 'ETH' ? parseEther(String(a)) : parseUnits(String(a), 6)
-    );
-
-    // ETH: native payment (msg.value); USDC: ERC-20 transfer (token != address(0))
-    // TODO: For USDC, first call approve() on the USDC contract before this call.
-    const tokenAddress =
-      currency === 'ETH'
-        ? '0x0000000000000000000000000000000000000000'
-        : '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d'; // USDC on Arbitrum Sepolia
-
+  freelancer,
+  title,
+  milestoneDescriptions,
+  milestoneAmounts,
+  durationSeconds,
+}) => {
+    
     writeContract({
-      address: CONTRACT_ADDRESSES.ESCROW_FACTORY,
-      abi:     ESCROW_FACTORY_ABI,
-      functionName: 'createEscrow',
-      args: [freelancer, deadlineTs, milestonesBigInt, tokenAddress],
-      value: currency === 'ETH' ? parseEther(String(totalAmount)) : 0n,
+      address: CONTRACTS.ESCROW,
+      abi: EscrowABI,
+      functionName: "createJob",
+      args: [
+        freelancer,
+        title,
+        milestoneDescriptions,
+        milestoneAmounts.map((a) => BigInt(a)),
+        BigInt(durationSeconds),
+      ],
     });
   };
 
-  return { createEscrow, hash, isPending, isConfirming, isSuccess, error };
+  return {
+    createEscrow,
+    hash,
+    receipt,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  };
 }
 
-export function useSubmitWork() {
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+export function useFundJob() {
+  const { writeContract, data: hash, isPending, error } =
+    useWriteContract();
 
-  const submitWork = (escrowId, evidenceUri = '') => {
+  const {
+    isLoading: isConfirming,
+    isSuccess,
+  } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  const fundJob = (jobId) => {
     writeContract({
-      address: CONTRACT_ADDRESSES.ESCROW_FACTORY,
-      abi:     ESCROW_FACTORY_ABI,
-      functionName: 'submitWork',
-      args: [BigInt(escrowId), evidenceUri],
+      address: CONTRACTS.ESCROW,
+      abi: EscrowABI,
+      functionName: "fundJob",
+      args: [BigInt(jobId)],
     });
   };
 
-  return { submitWork, hash, isPending, isConfirming, isSuccess, error };
+  return {
+    fundJob,
+    hash,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  };
 }
 
-export function useReleasePayment() {
+export function useDeliverMilestone() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess } =
+    useWaitForTransactionReceipt({ hash });
 
-  const releasePayment = (escrowId) => {
+  const deliverMilestone = (
+    jobId,
+    milestoneId,
+    deliveryHash
+  ) => {
     writeContract({
-      address: CONTRACT_ADDRESSES.ESCROW_FACTORY,
-      abi:     ESCROW_FACTORY_ABI,
-      functionName: 'releasePayment',
-      args: [BigInt(escrowId)],
+      address: CONTRACTS.ESCROW,
+      abi: EscrowABI,
+      functionName: "deliverMilestone",
+      args: [
+        BigInt(jobId),
+        BigInt(milestoneId),
+        deliveryHash,
+      ],
     });
   };
 
-  return { releasePayment, hash, isPending, isConfirming, isSuccess, error };
+  return {
+    deliverMilestone,
+    hash,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  };
+}
+
+export function useReleaseMilestone() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } =
+    useWaitForTransactionReceipt({ hash });
+
+  const releaseMilestone = (
+    jobId,
+    milestoneId
+  ) => {
+    writeContract({
+      address: CONTRACTS.ESCROW,
+      abi: EscrowABI,
+      functionName: "releaseMilestone",
+      args: [
+        BigInt(jobId),
+        BigInt(milestoneId),
+      ],
+    });
+  };
+
+  return {
+    releaseMilestone,
+    hash,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  };
 }
 
 export function useRaiseDispute() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess } =
+    useWaitForTransactionReceipt({ hash });
 
-  const raiseDispute = (escrowId, reason) => {
+  const raiseDispute = (
+    jobId,
+    milestoneId,
+    reason
+  ) => {
     writeContract({
-      address: CONTRACT_ADDRESSES.ESCROW_FACTORY,
-      abi:     ESCROW_FACTORY_ABI,
-      functionName: 'raiseDispute',
-      args: [BigInt(escrowId), reason],
+      address: CONTRACTS.ESCROW,
+      abi: EscrowABI,
+      functionName: "raiseDispute",
+      args: [
+        BigInt(jobId),
+        BigInt(milestoneId),
+        reason,
+      ],
     });
   };
 
-  return { raiseDispute, hash, isPending, isConfirming, isSuccess, error };
+  return {
+    raiseDispute,
+    hash,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  };
 }
 
-export function useAutoRelease() {
+
+export function useProposeSettlement() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess } =
+    useWaitForTransactionReceipt({ hash });
 
-  const autoRelease = (escrowId) => {
+  const proposeSettlement = (
+    disputeId,
+    clientBps
+  ) => {
     writeContract({
-      address: CONTRACT_ADDRESSES.ESCROW_FACTORY,
-      abi:     ESCROW_FACTORY_ABI,
-      functionName: 'autoRelease',
-      args: [BigInt(escrowId)],
+      address: CONTRACTS.ESCROW,
+      abi: EscrowABI,
+      functionName: "proposeSettlement",
+      args: [
+          BigInt(disputeId),
+          BigInt(clientBps),
+      ],
     });
   };
 
-  return { autoRelease, hash, isPending, isConfirming, isSuccess, error };
-}
-
-export function useAgreeToSplit() {
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
-
-  // clientBps: basis points going to client (5000 = 50/50 split)
-  const agreeToSplit = (escrowId, clientBps) => {
-    writeContract({
-      address: CONTRACT_ADDRESSES.ESCROW_FACTORY,
-      abi:     ESCROW_FACTORY_ABI,
-      functionName: 'agreeToSplit',
-      args: [BigInt(escrowId), BigInt(clientBps)],
-    });
+  return {
+    proposeSettlement,
+    hash,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
   };
-
-  return { agreeToSplit, hash, isPending, isConfirming, isSuccess, error };
 }
 
-/** Read-only: fetch escrow details by ID. */
-export function useGetEscrow(escrowId) {
+export function useJobCount() {
   return useReadContract({
-    address:      CONTRACT_ADDRESSES.ESCROW_FACTORY,
-    abi:          ESCROW_FACTORY_ABI,
-    functionName: 'getEscrow',
-    args:         [BigInt(escrowId || 0)],
-    enabled:      !!escrowId,
+    address: CONTRACTS.ESCROW,
+    abi: EscrowABI,
+    functionName: "getJobCount",
   });
 }
+
+export function useJobBasic(jobId) {
+  return useReadContract({
+    address: CONTRACTS.ESCROW,
+    abi: EscrowABI,
+    functionName: "getJobBasic",
+    args: [BigInt(jobId)],
+    query: {
+      enabled: jobId !== undefined && jobId !== null,
+    },
+  });
+}
+
+export function useMilestone(jobId, milestoneId) {
+  return useReadContract({
+    address: CONTRACTS.ESCROW,
+    abi: EscrowABI,
+    functionName: "getMilestone",
+    args: [BigInt(jobId), BigInt(milestoneId)],
+    query: {
+      enabled:
+        jobId !== undefined &&
+        milestoneId !== undefined &&
+        jobId !== null &&
+        milestoneId !== null,
+    },
+  });
+}
+

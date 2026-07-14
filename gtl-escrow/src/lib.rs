@@ -21,7 +21,7 @@ pub mod juror;
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use alloy_primitives::{Address, U256};
+use alloy_primitives::{Address, U256, B256};
 use storage::state::{Dispute, Job, Juror};
 
 use alloy_primitives::FixedBytes;
@@ -286,6 +286,73 @@ impl EscrowContract {
         )
     }
 
+    pub fn get_job_count(
+        &self,
+    ) -> U256 {
+        self.job_count.get()
+    }
+
+    pub fn get_job_basic(
+        &self,
+        job_id: U256,
+    ) -> (
+        Address,
+        Address,
+        String,
+        U256,
+        U256,
+        u8,
+        u64,
+        u64,
+        u64,
+    ) {
+        let job = self.jobs.get(job_id);
+
+        (
+            job.client.get(),
+            job.freelancer.get(),
+            job.title.get_string(),
+            job.total_amount.get(),
+            job.released_amount.get(),
+            job.status.get().to::<u8>(),
+            job.created_at.get().to::<u64>(),
+            job.deadline.get().to::<u64>(),
+            job.milestone_count.get().to::<u64>(),
+        )
+    }
+
+    pub fn get_milestone(
+        &self,
+        job_id: U256,
+        milestone_id: U256,
+    ) -> (
+        String,
+        U256,
+        bool,
+        bool,
+        bool,
+        bool,
+        U256,
+        B256,
+        u64,
+        u64,
+    ) {
+        let job = self.jobs.get(job_id);
+        let milestone = job.milestones.get(milestone_id);
+
+        (
+            milestone.description.get_string(),
+            milestone.amount.get(),
+            milestone.delivered.get(),
+            milestone.released.get(),
+            milestone.late.get(),
+            milestone.has_dispute.get(),
+            milestone.dispute_id.get(),
+            milestone.delivery_hash.get(),
+            milestone.delivered_at.get().to::<u64>(),
+            milestone.dispute_deadline.get().to::<u64>(),
+        )
+    }
 
 
 

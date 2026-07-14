@@ -4,18 +4,30 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRole } from '@/hooks/useRole';
-import { useApp } from '@/context/AppContext';
-import { useCreateEscrow } from '@/hooks/useEscrow';
-import { showTxToast, CurrencyToggle } from '@/components/ui/TransactionToast';
+import {
+    useCreateEscrow,
+    useFundJob,
+} from "@/hooks/useEscrow";
+import { useApproveUSDC } from "@/hooks/useUSDC";
+import { showTxToast } from '@/components/ui/TransactionToast';
 import Button from '@/components/ui/Button';
 import Sidebar from '@/components/layout/Sidebar';
 import StatusPill from '@/components/ui/StatusPill';
 import { PageLoader } from '@/components/ui/Loader';
 import {
-  Plus, Trash2, Calendar, Wallet, FileText,
-  Info, ChevronDown, DollarSign, Users, Eye,
+  Plus,
+  Trash2,
+  Calendar,
+  Wallet,
+  FileText,
+  Info,
+  DollarSign,
+  Users,
+  Eye,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { decodeEventLog } from "viem";
+import { EscrowABI } from "@/abi/EscrowABI";
 
 /**
  * Post a Job page — Page 4 (Client only)
@@ -30,13 +42,12 @@ export default function CreateJobPage() {
   const router = useRouter();
   const { ready, authenticated, user } = usePrivy();
   const { isClient, isHydrated } = useRole();
-  const { addJob } = useApp();
 
   // ── Form state ─────────────────────────────────────────────────
   const [title,       setTitle]       = useState('');
   const [description, setDescription] = useState('');
   const [budget,      setBudget]      = useState('');
-  const [currency,    setCurrency]    = useState('ETH');
+  const [currency] = useState("USDC");
   const [deadline,    setDeadline]    = useState('');
   const [freelancer,  setFreelancer]  = useState('');
   const [isPublic,    setIsPublic]    = useState(true);
@@ -45,9 +56,32 @@ export default function CreateJobPage() {
     { id: 1, title: '', amount: '' },
   ]);
   const [errors, setErrors] = useState({});
+  const [createdJobId, setCreatedJobId] = useState(null);
 
   // ── Contract hook ───────────────────────────────────────────────
-  const { createEscrow, hash, isPending, isConfirming, isSuccess, error } = useCreateEscrow();
+  const {
+    createEscrow,
+    hash,
+    receipt,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  } = useCreateEscrow();
+
+  const {
+      approve,
+      isPending: approvePending,
+      isConfirming: approveConfirming,
+      isSuccess: approveSuccess,
+  } = useApproveUSDC();
+
+  const {
+      fundJob,
+      isPending: fundPending,
+      isConfirming: fundConfirming,
+      isSuccess: fundSuccess,
+  } = useFundJob();
 
   // ── Guards ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -58,29 +92,72 @@ export default function CreateJobPage() {
   // ── Toast on tx result ──────────────────────────────────────────
   useEffect(() => {
     if (isSuccess && hash) {
-      showTxToast('success', hash, 'Job posted & funds locked in escrow!');
-      // Add to local mock store
-      addJob({
-        id: `job_${Date.now()}`,
-        title,
-        description,
-        budget,
-        currency,
-        deadline,
-        status: 'Funded',
-        clientWallet: user?.wallet?.address || '',
-        freelancerWallet: isPublic ? null : freelancer,
-        milestones: milestoneOn ? milestones.map((m, i) => ({ ...m, id: `m_new_${i}`, status: 'PENDING' })) : [],
-        category: 'Uncategorised',
-        clientTrustScore: 88,
-        createdAt: new Date().toISOString(),
-      });
-      router.push('/dashboard');
+      showTxToast('success', hash, 'Job created successfully!');
     }
     if (error) {
       showTxToast('error', null, error.message);
     }
   }, [isSuccess, hash, error]);
+
+  useEffect(() => {
+    if (!receipt) return;
+
+    try {
+      const log = receipt.logs.find((log) => {
+        try {
+          const decoded = decodeEventLog({
+            abi: EscrowABI,
+            data: log.data,
+            topics: log.topics,
+          });
+
+          return decoded.eventName === "JobCreated";
+        } catch {
+          return false;
+        }
+      });
+
+      if (!log) return;
+
+      const decoded = decodeEventLog({
+        abi: EscrowABI,
+        data: log.data,
+        topics: log.topics,
+      });
+
+      const jobId = decoded.args.job_id;
+
+      setCreatedJobId(jobId);
+
+      // approve(
+      //   BigInt(
+      //     Math.round(Number(budget) * 1_000_000)
+      //   )
+      // );
+
+      console.log("Created Job ID:", jobId.toString());
+    } catch (err) {
+      console.error(err);
+    }
+  }, [receipt]);
+
+  useEffect(() => {
+      if (!createdJobId) return;
+
+      fundJob(BigInt(createdJobId));
+  }, [createdJobId]);
+
+  useEffect(() => {
+      if (!fundSuccess) return;
+
+      showTxToast(
+          "success",
+          null,
+          "Escrow funded successfully!"
+      );
+
+      router.push(`/jobs/${createdJobId}`);
+  }, [fundSuccess]);
 
   // ── Milestone helpers ───────────────────────────────────────────
   const addMilestone = () =>
@@ -121,16 +198,27 @@ export default function CreateJobPage() {
       ? '0x0000000000000000000000000000000000000000'
       : freelancer;
 
-    const amts = milestoneOn
-      ? milestones.map((m) => m.amount)
-      : [];
+    const milestoneDescriptions = milestoneOn
+      ? milestones.map((m) => m.title)
+      : ["Complete Job"];
+
+    const milestoneAmounts = milestoneOn
+      ? milestones.map((m) => Math.round(Number(m.amount) * 1_000_000))
+      : [Math.round(Number(budget) * 1_000_000)];
+
+    const durationSeconds = Math.max(
+      0,
+      Math.floor(
+        (new Date(deadline).getTime() - Date.now()) / 1000
+      )
+    );
 
     createEscrow({
-      freelancer:       freelancerAddr,
-      deadline,
-      milestoneAmounts: amts,
-      currency,
-      totalAmount:      budget,
+      freelancer: freelancerAddr,
+      title,
+      milestoneDescriptions,
+      milestoneAmounts,
+      durationSeconds,
     });
   };
 
@@ -149,7 +237,7 @@ export default function CreateJobPage() {
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Post a Job</h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Funds are locked in escrow the moment this form is submitted. The freelancer cannot access them until you approve delivery.
+              Create an escrow job. Funds will be locked after approving USDC and funding the escrow.
             </p>
           </div>
 
@@ -204,7 +292,9 @@ export default function CreateJobPage() {
                   <div>
                     <label className="label">Budget *</label>
                     <div className="flex gap-3">
-                      <CurrencyToggle value={currency} onChange={setCurrency} />
+                      <div className="px-4 py-2 rounded-lg border">
+                          USDC
+                      </div>
                       <div className="flex-1">
                         <input
                           id="job-budget"
@@ -212,7 +302,7 @@ export default function CreateJobPage() {
                           step="any"
                           min="0"
                           className="input"
-                          placeholder={currency === 'ETH' ? '0.5' : '500'}
+                          placeholder="500"
                           value={budget}
                           onChange={(e) => setBudget(e.target.value)}
                         />
@@ -382,11 +472,38 @@ export default function CreateJobPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  loading={isPending || isConfirming}
+                  loading={
+                      isPending ||
+                      isConfirming ||
+                      approvePending ||
+                      approveConfirming ||
+                      fundPending ||
+                      fundConfirming
+                  }
                   className="w-full"
                   id="submit-job"
                 >
-                  {isPending ? 'Confirm in wallet…' : isConfirming ? 'Confirming on-chain…' : '🔒 Lock Funds & Post Job'}
+                  {
+                    isPending
+                    ? "Confirm Create Job..."
+
+                    : isConfirming
+                    ? "Creating Job..."
+
+                    : approvePending
+                    ? "Approve USDC..."
+
+                    : approveConfirming
+                    ? "Waiting for Approval..."
+
+                    : fundPending
+                    ? "Fund Escrow..."
+
+                    : fundConfirming
+                    ? "Funding Escrow..."
+
+                    : "Create Job"
+                  }
                 </Button>
                 <p className="text-center text-xs text-gray-400 dark:text-gray-500">
                   This will open a MetaMask popup to confirm the transaction.
@@ -404,7 +521,7 @@ export default function CreateJobPage() {
                   {/* Status */}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-400 dark:text-gray-500">Status</span>
-                    <StatusPill status="Funded" />
+                    <StatusPill status="Created" />
                   </div>
 
                   {/* Title */}

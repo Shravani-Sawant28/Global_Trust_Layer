@@ -1,91 +1,99 @@
-import { useReadContract } from 'wagmi';
-import { CONTRACT_ADDRESSES, REPUTATION_REGISTRY_ABI } from '@/lib/contracts';
-import { MOCK_PROFILES } from '@/lib/mockData';
+import { useReadContract } from "wagmi";
+import { CONTRACTS } from "@/config/contracts";
+import { ReputationABI } from "@/abi/ReputationABI";
 
 /**
- * useReputation — reads trust data from the on-chain ReputationRegistry.
- *
- * Falls back to mock data when the contract address is the zero address
- * (i.e., not yet deployed). This allows the frontend to work fully
- * offline during development.
+ * ===========================
+ * Reputation Registry Hooks
+ * ===========================
  */
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-const isDeployed   = CONTRACT_ADDRESSES.REPUTATION_REGISTRY !== ZERO_ADDRESS;
 
 /**
- * Returns the full reputation profile for a wallet.
- * Fallback: MOCK_PROFILES[wallet] if contract not deployed.
+ * Client Trust Score
  */
-export function useProfile(wallet) {
-  const onChain = useReadContract({
-    address:      CONTRACT_ADDRESSES.REPUTATION_REGISTRY,
-    abi:          REPUTATION_REGISTRY_ABI,
-    functionName: 'getProfile',
-    args:         [wallet],
-    enabled:      !!wallet && isDeployed,
+export function useClientScore(wallet) {
+  return useReadContract({
+    address: CONTRACTS.REPUTATION,
+    abi: ReputationABI,
+    functionName: "getClientScore",
+    args: [wallet],
+    query: {
+      enabled: !!wallet,
+    },
   });
-
-  if (!isDeployed) {
-    const mock = MOCK_PROFILES[wallet] || {
-      trustScore:    0,
-      jobsCompleted: 0,
-      disputeCount:  0,
-      totalEarned:   0n,
-      memberSince:   BigInt(Math.floor(Date.now() / 1000)),
-    };
-    return { data: mock, isLoading: false, error: null };
-  }
-
-  return onChain;
 }
 
 /**
- * Returns just the trust score (0–100) for a wallet.
- * Useful for badges on job cards and tables.
+ * Freelancer Trust Score
  */
-export function useTrustScore(wallet) {
-  const onChain = useReadContract({
-    address:      CONTRACT_ADDRESSES.REPUTATION_REGISTRY,
-    abi:          REPUTATION_REGISTRY_ABI,
-    functionName: 'getTrustScore',
-    args:         [wallet],
-    enabled:      !!wallet && isDeployed,
+export function useFreelancerScore(wallet) {
+  return useReadContract({
+    address: CONTRACTS.REPUTATION,
+    abi: ReputationABI,
+    functionName: "getFreelancerScore",
+    args: [wallet],
+    query: {
+      enabled: !!wallet,
+    },
   });
-
-  if (!isDeployed) {
-    const mock = MOCK_PROFILES[wallet];
-    return { data: mock?.trustScore ?? 0, isLoading: false, error: null };
-  }
-
-  return onChain;
 }
 
 /**
- * Returns aggregate stats for a wallet.
+ * Juror Trust Score
  */
-export function useStats(wallet) {
-  const onChain = useReadContract({
-    address:      CONTRACT_ADDRESSES.REPUTATION_REGISTRY,
-    abi:          REPUTATION_REGISTRY_ABI,
-    functionName: 'getStats',
-    args:         [wallet],
-    enabled:      !!wallet && isDeployed,
+export function useJurorScore(wallet) {
+  return useReadContract({
+    address: CONTRACTS.REPUTATION,
+    abi: ReputationABI,
+    functionName: "getJurorScore",
+    args: [wallet],
+    query: {
+      enabled: !!wallet,
+    },
   });
+}
 
-  if (!isDeployed) {
-    const mock = MOCK_PROFILES[wallet];
-    return {
-      data: {
-        totalJobs:     (mock?.jobsCompleted || 0) + (mock?.disputeCount || 0),
-        completedJobs:  mock?.jobsCompleted || 0,
-        disputeCount:   mock?.disputeCount  || 0,
-        disputeRate:    mock ? Math.round((mock.disputeCount / (mock.jobsCompleted + mock.disputeCount || 1)) * 10000) : 0,
-      },
-      isLoading: false,
-      error: null,
-    };
-  }
+/**
+ * Client Passport
+ */
+export function useClientPassport(wallet) {
+  return useReadContract({
+    address: CONTRACTS.REPUTATION,
+    abi: ReputationABI,
+    functionName: "getClientPassport",
+    args: [wallet],
+    query: {
+      enabled: !!wallet,
+    },
+  });
+}
 
-  return onChain;
+/**
+ * Freelancer Passport
+ */
+export function useFreelancerPassport(wallet) {
+  return useReadContract({
+    address: CONTRACTS.REPUTATION,
+    abi: ReputationABI,
+    functionName: "getFreelancerPassport",
+    args: [wallet],
+    query: {
+      enabled: !!wallet,
+    },
+  });
+}
+
+/**
+ * Juror Passport
+ */
+export function useJurorPassport(wallet) {
+  return useReadContract({
+    address: CONTRACTS.REPUTATION,
+    abi: ReputationABI,
+    functionName: "getJurorPassport",
+    args: [wallet],
+    query: {
+      enabled: !!wallet,
+    },
+  });
 }
