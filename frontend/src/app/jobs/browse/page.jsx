@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useApp } from '@/context/AppContext';
-import { MOCK_JOBS } from '@/lib/mockData';
 import JobCard from '@/components/jobs/JobCard';
 import Sidebar from '@/components/layout/Sidebar';
 import Button from '@/components/ui/Button';
@@ -27,11 +26,12 @@ const CURRENCIES = ['All', 'ETH', 'USDC'];
  */
 export default function BrowseJobsPage() {
   const { authenticated } = usePrivy();
+  const { jobs } = useApp();
   const [search,   setSearch]   = useState('');
   const [category, setCategory] = useState('All Categories');
   const [currency, setCurrency] = useState('All');
 
-  const openJobs = MOCK_JOBS.filter((j) => j.status === 'Funded' && !j.freelancerWallet);
+  const openJobs = jobs.filter((j) => j.status === 'Funded' && !j.freelancerWallet);
 
   const filtered = useMemo(() => {
     return openJobs.filter((j) => {

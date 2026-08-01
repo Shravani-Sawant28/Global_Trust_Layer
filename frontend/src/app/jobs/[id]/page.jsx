@@ -7,9 +7,9 @@ import {
   useDeliverMilestone,
   useReleaseMilestone,
   useRaiseDispute,
-  useJobBasic,
   useMilestone,
 } from '@/hooks/useEscrow';
+import { useApp } from '@/context/AppContext';
 import { showTxToast } from '@/components/ui/TransactionToast';
 import StatusPill from '@/components/ui/StatusPill';
 import TrustBadge from '@/components/trust/TrustBadge';
@@ -41,6 +41,8 @@ export default function JobDetailPage() {
     user?.wallet?.address ||
     user?.linkedAccounts?.find((a) => a.type === 'wallet')?.address;
 
+  const { jobs } = useApp();
+
   const {
     deliverMilestone,
     isPending: sw,
@@ -59,13 +61,15 @@ export default function JobDetailPage() {
   const [disputeReason, setDisputeReason] = useState('');
   const [showDisputeForm, setShowDisputeForm] = useState(false);
 
-  const { data: job } = useJobBasic(jobId);
+
+
+  const job = jobs.find((j) => j.id === id || j.escrowId === jobId);
 
   const { data: milestone } = useMilestone(jobId, 0);
 
   useEffect(() => {
-    console.log("JobBasic:", job);
-    console.log("Milestone:", milestone);
+    console.log("Job Detail Context:", job);
+    console.log("Milestone OnChain:", milestone);
   }, [job, milestone]);
 
   // Toast reactions

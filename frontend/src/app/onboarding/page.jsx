@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useApp } from '@/context/AppContext';
@@ -17,7 +17,7 @@ import { Shield, Briefcase, Users, CheckCircle2, ArrowRight } from 'lucide-react
  *  3. After authentication → shows role selection card.
  *  4. User selects role → saved to localStorage → redirect to dashboard.
  */
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router          = useRouter();
   const searchParams    = useSearchParams();
   const { ready, authenticated, login, user } = usePrivy();
@@ -174,5 +174,13 @@ export default function OnboardingPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <OnboardingContent />
+    </Suspense>
   );
 }

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { MOCK_JOBS, MOCK_PROFILES } from '@/lib/mockData';
+import { getJobs, getOpenJobs } from '@/lib/api';
 
 /**
  * AppContext — global application state
@@ -30,6 +31,22 @@ export function AppProvider({ children }) {
   useEffect(() => {
     const storedRole = localStorage.getItem('gtl_role');
     if (storedRole) setRoleState(storedRole);
+
+    const storedJobs = localStorage.getItem('gtl_jobs');
+    if (storedJobs) {
+      try {
+        const parsed = JSON.parse(storedJobs);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge mock jobs with custom local jobs (so they don't lose mock data entirely)
+          // We assume local jobs have a different ID format or we can just prepend them
+          const customJobs = parsed.filter(j => !MOCK_JOBS.find(mj => mj.id === j.id));
+          setJobs([...customJobs, ...MOCK_JOBS]);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     setIsHydrated(true);
   }, []);
 
@@ -42,6 +59,34 @@ export function AppProvider({ children }) {
       user.linkedAccounts?.find((a) => a.type === 'wallet')?.address;
 
     if (wallet) {
+      // Fetch user's jobs and open jobs from backend API
+      const loadJobsFromApi = async () => {
+        try {
+          const [userJobsRes, openJobsRes] = await Promise.all([
+            getJobs(wallet).catch(() => ({ jobs: [] })),
+            getOpenJobs().catch(() => ({ jobs: [] }))
+          ]);
+          
+          const apiJobs = [...(userJobsRes?.jobs || []), ...(openJobsRes?.jobs || [])];
+          
+          // Deduplicate by ID
+          const uniqueApiJobs = Array.from(new Map(apiJobs.map(j => [j.id, j])).values());
+          
+          if (uniqueApiJobs.length > 0) {
+            setJobs(prev => {
+              // Merge API jobs with existing mock/local jobs (avoiding duplicates)
+              const existingIds = new Set(uniqueApiJobs.map(j => j.id));
+              const prevUnique = prev.filter(p => !existingIds.has(p.id));
+              return [...uniqueApiJobs, ...prevUnique];
+            });
+          }
+        } catch (err) {
+          console.warn("Failed to fetch jobs from API", err);
+        }
+      };
+      
+      loadJobsFromApi();
+
       // TODO: Replace with real API call: getUser(wallet)
       const mockProfile = MOCK_PROFILES[wallet] || {
         wallet,
@@ -68,7 +113,11 @@ export function AppProvider({ children }) {
 
   // ── Add a newly created job to the local list ───────────────────
   const addJob = useCallback((job) => {
-    setJobs((prev) => [job, ...prev]);
+    setJobs((prev) => {
+      const newJobs = [job, ...prev];
+      localStorage.setItem('gtl_jobs', JSON.stringify(newJobs));
+      return newJobs;
+    });
   }, []);
 
   const value = {

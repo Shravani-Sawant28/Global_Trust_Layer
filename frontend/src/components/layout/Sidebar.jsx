@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronRight,
 } from 'lucide-react';
+import MintUSDCButton from '@/components/ui/MintUSDCButton';
 
 const CLIENT_LINKS = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard'   },
@@ -85,8 +86,9 @@ export default function Sidebar() {
 
       {/* Bottom settings link */}
       <div className="border-t border-gray-100 dark:border-gray-800 p-3">
+        <MintUSDCButton />
         <Link href="/settings"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 mt-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
         >
           <Settings className="h-4.5 w-4.5" />
           Settings

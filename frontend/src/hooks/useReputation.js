@@ -1,3 +1,4 @@
+
 import { useReadContract } from "wagmi";
 import { CONTRACTS } from "@/config/contracts";
 import { ReputationABI } from "@/abi/ReputationABI";
@@ -9,13 +10,31 @@ import { ReputationABI } from "@/abi/ReputationABI";
  */
 
 /**
- * Client Trust Score
+ * Trust Score
  */
-export function useClientScore(wallet) {
+export function useTrustScore(wallet) {
   return useReadContract({
     address: CONTRACTS.REPUTATION,
     abi: ReputationABI,
-    functionName: "getClientScore",
+    functionName: "getTrustScore",
+    args: [wallet],
+    query: {
+      enabled: !!wallet,
+    },
+  });
+}
+
+export const useClientScore = useTrustScore;
+export const useFreelancerScore = useTrustScore;
+
+/**
+ * Passport (Profile)
+ */
+export function useProfile(wallet) {
+  return useReadContract({
+    address: CONTRACTS.REPUTATION,
+    abi: ReputationABI,
+    functionName: "getPassport",
     args: [wallet],
     query: {
       enabled: !!wallet,
@@ -24,13 +43,13 @@ export function useClientScore(wallet) {
 }
 
 /**
- * Freelancer Trust Score
+ * Job History
  */
-export function useFreelancerScore(wallet) {
+export function useJobHistory(wallet) {
   return useReadContract({
     address: CONTRACTS.REPUTATION,
     abi: ReputationABI,
-    functionName: "getFreelancerScore",
+    functionName: "getJobHistory",
     args: [wallet],
     query: {
       enabled: !!wallet,
@@ -39,58 +58,13 @@ export function useFreelancerScore(wallet) {
 }
 
 /**
- * Juror Trust Score
+ * Is New Wallet
  */
-export function useJurorScore(wallet) {
+export function useIsNewWallet(wallet) {
   return useReadContract({
     address: CONTRACTS.REPUTATION,
     abi: ReputationABI,
-    functionName: "getJurorScore",
-    args: [wallet],
-    query: {
-      enabled: !!wallet,
-    },
-  });
-}
-
-/**
- * Client Passport
- */
-export function useClientPassport(wallet) {
-  return useReadContract({
-    address: CONTRACTS.REPUTATION,
-    abi: ReputationABI,
-    functionName: "getClientPassport",
-    args: [wallet],
-    query: {
-      enabled: !!wallet,
-    },
-  });
-}
-
-/**
- * Freelancer Passport
- */
-export function useFreelancerPassport(wallet) {
-  return useReadContract({
-    address: CONTRACTS.REPUTATION,
-    abi: ReputationABI,
-    functionName: "getFreelancerPassport",
-    args: [wallet],
-    query: {
-      enabled: !!wallet,
-    },
-  });
-}
-
-/**
- * Juror Passport
- */
-export function useJurorPassport(wallet) {
-  return useReadContract({
-    address: CONTRACTS.REPUTATION,
-    abi: ReputationABI,
-    functionName: "getJurorPassport",
+    functionName: "isNewWallet",
     args: [wallet],
     query: {
       enabled: !!wallet,

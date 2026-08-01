@@ -93,6 +93,36 @@ export function useFundJob() {
   };
 }
 
+export function useAcceptJob() {
+  const { writeContract, data: hash, isPending, error } =
+    useWriteContract();
+
+  const {
+    isLoading: isConfirming,
+    isSuccess,
+  } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  const acceptJob = (jobId) => {
+    writeContract({
+      address: CONTRACTS.ESCROW,
+      abi: EscrowABI,
+      functionName: "acceptJob",
+      args: [BigInt(jobId)],
+    });
+  };
+
+  return {
+    acceptJob,
+    hash,
+    isPending,
+    isConfirming,
+    isSuccess,
+    error,
+  };
+}
+
 export function useDeliverMilestone() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } =
@@ -106,7 +136,7 @@ export function useDeliverMilestone() {
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
-      functionName: "deliverMilestone",
+      functionName: "markDelivered",
       args: [
         BigInt(jobId),
         BigInt(milestoneId),
@@ -188,28 +218,30 @@ export function useRaiseDispute() {
 }
 
 
-export function useProposeSettlement() {
+export function useAgreeToSplit() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } =
     useWaitForTransactionReceipt({ hash });
 
-  const proposeSettlement = (
+  const agreeToSplit = (
     disputeId,
+    milestoneId,
     clientBps
   ) => {
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
-      functionName: "proposeSettlement",
+      functionName: "agreeToSplit",
       args: [
           BigInt(disputeId),
+          BigInt(milestoneId),
           BigInt(clientBps),
       ],
     });
   };
 
   return {
-    proposeSettlement,
+    agreeToSplit,
     hash,
     isPending,
     isConfirming,
@@ -222,7 +254,7 @@ export function useJobCount() {
   return useReadContract({
     address: CONTRACTS.ESCROW,
     abi: EscrowABI,
-    functionName: "getJobCount",
+    functionName: "jobCounter",
   });
 }
 
@@ -230,7 +262,7 @@ export function useJobBasic(jobId) {
   return useReadContract({
     address: CONTRACTS.ESCROW,
     abi: EscrowABI,
-    functionName: "getJobBasic",
+    functionName: "getJob",
     args: [BigInt(jobId)],
     query: {
       enabled: jobId !== undefined && jobId !== null,

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRole } from '@/hooks/useRole';
+import { useApp } from '@/context/AppContext';
+import { createJob as apiCreateJob } from '@/lib/api';
 import {
     useCreateEscrow,
     useFundJob,
@@ -42,6 +44,7 @@ export default function CreateJobPage() {
   const router = useRouter();
   const { ready, authenticated, user } = usePrivy();
   const { isClient, isHydrated } = useRole();
+  const { addJob } = useApp();
 
   // ── Form state ─────────────────────────────────────────────────
   const [title,       setTitle]       = useState('');
@@ -129,11 +132,11 @@ export default function CreateJobPage() {
 
       setCreatedJobId(jobId);
 
-      // approve(
-      //   BigInt(
-      //     Math.round(Number(budget) * 1_000_000)
-      //   )
-      // );
+      approve(
+        BigInt(
+          Math.round(Number(budget) * 1_000_000)
+        )
+      );
 
       console.log("Created Job ID:", jobId.toString());
     } catch (err) {
@@ -155,6 +158,37 @@ export default function CreateJobPage() {
           null,
           "Escrow funded successfully!"
       );
+
+      const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find((a) => a.type === 'wallet')?.address;
+
+      const freelancerAddr = isPublic
+        ? null
+        : freelancer;
+
+      // Add newly created job to mock state so it shows up in dashboard
+      const newJob = {
+          id: createdJobId.toString(),
+          title,
+          description,
+          budget,
+          currency,
+          deadline,
+          clientWallet: walletAddress,
+          freelancerWallet: freelancerAddr,
+          status: 'Funded',
+          escrowId: Number(createdJobId),
+          milestones: milestoneOn ? milestones.map((m, i) => ({
+              id: `m_new_${i}`,
+              title: m.title || `Milestone ${i+1}`,
+              amount: m.amount,
+              status: 'PENDING'
+          })) : [],
+          createdAt: new Date().toISOString(),
+          category: 'Custom Job',
+          clientTrustScore: 100, // mock fallback
+      };
+
+      addJob(newJob);
 
       router.push(`/jobs/${createdJobId}`);
   }, [fundSuccess]);
@@ -190,7 +224,7 @@ export default function CreateJobPage() {
   };
 
   // ── Submit ──────────────────────────────────────────────────────
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -212,6 +246,25 @@ export default function CreateJobPage() {
         (new Date(deadline).getTime() - Date.now()) / 1000
       )
     );
+
+    try {
+      const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find((a) => a.type === 'wallet')?.address;
+      await apiCreateJob({
+        clientWallet: walletAddress,
+        freelancerWallet: isPublic ? null : freelancer,
+        title,
+        description,
+        budget: budget.toString(),
+        currency,
+        deadline: deadline ? new Date(deadline).toISOString() : null,
+        category: 'Custom Job',
+        isPublic,
+        milestones: milestoneOn ? milestones.map(m => ({ title: m.title, amountRaw: (Number(m.amount)*1000000).toString() })) : []
+      });
+      console.log('Successfully pre-created job in database');
+    } catch (err) {
+      console.warn('Failed to pre-create job in DB (backend might not be running). Proceeding with on-chain creation...', err);
+    }
 
     createEscrow({
       freelancer: freelancerAddr,

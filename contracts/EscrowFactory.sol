@@ -87,7 +87,7 @@ contract EscrowFactory is ReentrancyGuard {
         uint256[] memory _milestoneAmounts,
         uint256 _durationSeconds
     ) external returns (uint256) {
-        require(_freelancer != address(0), "Invalid freelancer address");
+        // Freelancer can be address(0) if posted publicly
         require(_freelancer != msg.sender, "Cannot hire yourself");
         require(bytes(_title).length > 0, "Title required");
         require(_milestoneDescriptions.length == _milestoneAmounts.length, "Milestone arrays must match in length");
@@ -134,6 +134,21 @@ contract EscrowFactory is ReentrancyGuard {
 
         emit JobCreated(jobId, msg.sender, _freelancer, total, _title);
         return jobId;
+    }
+
+    // ───────────────────────── ACCEPT JOB (PUBLIC) ─────────────────────────
+    
+    function acceptJob(uint256 jobId) external nonReentrant {
+        Job storage job = jobs[jobId];
+        require(job.client != address(0), "Job does not exist");
+        require(job.freelancer == address(0), "Job already assigned");
+        require(job.client != msg.sender, "Client cannot accept own job");
+        require(job.status == JobStatus.FUNDED || job.status == JobStatus.CREATED, "Invalid job status");
+        
+        job.freelancer = msg.sender;
+        freelancerJobs[msg.sender].push(jobId);
+        
+        // No specific event for now, or we can just emit JobCreated again or rely on state read
     }
 
     function fundJob(uint256 jobId) external nonReentrant {

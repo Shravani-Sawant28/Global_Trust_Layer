@@ -114,7 +114,7 @@ export default function DisputePage() {
                   variant="danger"
                   loading={rd}
                   disabled={!reason.trim()}
-                  onClick={() => raiseDispute(job.escrowId, reason)}
+                  onClick={() => raiseDispute(job.escrowId, 0, reason)}
                   id="confirm-dispute-btn"
                   className="w-full"
                 >
@@ -177,7 +177,7 @@ export default function DisputePage() {
 
                 <Button
                   loading={sp}
-                  onClick={() => agreeToSplit(job.escrowId, clientPct * 100)} // basis points
+                  onClick={() => agreeToSplit(job.escrowId, 0, clientPct * 100)} // basis points
                   id="agree-split-btn"
                   className="w-full"
                 >
