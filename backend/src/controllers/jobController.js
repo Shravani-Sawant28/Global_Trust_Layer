@@ -270,3 +270,44 @@ exports.getJobById = async (req, res, next) => {
     next(err);
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+//  POST /api/jobs/:id/accept
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * acceptJob — assigns a freelancer to an open job.
+ * 
+ * Body params:
+ *  wallet: string (required, freelancer Ethereum address)
+ */
+exports.acceptJob = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      const err = new Error('Invalid job id'); err.statusCode = 400; return next(err);
+    }
+    const { wallet } = req.body;
+    if (!wallet) {
+      const err = new Error('wallet is required in body'); err.statusCode = 400; return next(err);
+    }
+    
+    // Ensure wallet row exists
+    await walletQueries.upsertWallet(wallet);
+
+    let job = await jobQueries.getJobById(id);
+    if (!job) {
+       // if not found by primary key, try on-chain ID
+       job = await jobQueries.getJobByOnChainId(id);
+       if (!job) {
+         const err = new Error('Job not found'); err.statusCode = 404; return next(err);
+       }
+    }
+
+    await jobQueries.assignFreelancer(job.id, wallet);
+    
+    return res.json({ success: true, message: 'Freelancer assigned successfully' });
+  } catch (err) {
+    next(err);
+  }
+};

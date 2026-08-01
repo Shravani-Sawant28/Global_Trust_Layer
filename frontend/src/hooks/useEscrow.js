@@ -263,7 +263,7 @@ export function useJobBasic(jobId) {
     address: CONTRACTS.ESCROW,
     abi: EscrowABI,
     functionName: "getJob",
-    args: [BigInt(jobId)],
+    args: jobId !== undefined && jobId !== null ? [BigInt(jobId)] : undefined,
     query: {
       enabled: jobId !== undefined && jobId !== null,
     },
@@ -275,7 +275,7 @@ export function useMilestone(jobId, milestoneId) {
     address: CONTRACTS.ESCROW,
     abi: EscrowABI,
     functionName: "getMilestone",
-    args: [BigInt(jobId), BigInt(milestoneId)],
+    args: jobId !== undefined && jobId !== null && milestoneId !== undefined && milestoneId !== null ? [BigInt(jobId), BigInt(milestoneId)] : undefined,
     query: {
       enabled:
         jobId !== undefined &&

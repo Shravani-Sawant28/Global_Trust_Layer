@@ -8,9 +8,11 @@ import {
   useReleaseMilestone,
   useRaiseDispute,
   useMilestone,
+  useAcceptJob,
 } from '@/hooks/useEscrow';
 import { useApp } from '@/context/AppContext';
 import { showTxToast } from '@/components/ui/TransactionToast';
+import api from '@/lib/api';
 import StatusPill from '@/components/ui/StatusPill';
 import TrustBadge from '@/components/trust/TrustBadge';
 import Button from '@/components/ui/Button';
@@ -57,15 +59,16 @@ export default function JobDetailPage() {
     error: rpErr,
   } = useReleaseMilestone();
   const { raiseDispute,   isPending: rd, isSuccess: rdOk, error: rdErr } = useRaiseDispute();
+  const { acceptJob, isPending: aj, isSuccess: ajOk, error: ajErr } = useAcceptJob();
 
   const [disputeReason, setDisputeReason] = useState('');
   const [showDisputeForm, setShowDisputeForm] = useState(false);
 
 
 
-  const job = jobs.find((j) => j.id === id || j.escrowId === jobId);
+  const job = jobs.find((j) => String(j.id) === String(id) || String(j.onChainJobId) === String(id) || String(j.escrowId) === String(id));
 
-  const { data: milestone } = useMilestone(jobId, 0);
+  const { data: milestone } = useMilestone(job?.onChainJobId || job?.escrowId, 0);
 
   useEffect(() => {
     console.log("Job Detail Context:", job);
@@ -77,13 +80,22 @@ export default function JobDetailPage() {
   useEffect(() => { if (rpOk)  showTxToast('success', null, 'Payment released — funds sent to freelancer!'); }, [rpOk]);
   useEffect(() => { if (rdOk)  showTxToast('success', null, 'Dispute raised — funds frozen in escrow.'); }, [rdOk]);
   useEffect(() => {
-    if (swErr || rpErr || rdErr)
+    if (ajOk) {
+      showTxToast('success', null, 'Job accepted successfully!');
+      if (job && walletAddress) {
+        api.post(`/api/jobs/${job.id}/accept`, { wallet: walletAddress })
+           .catch(err => console.warn('Failed to inform backend of accepted job', err));
+      }
+    }
+  }, [ajOk]);
+  useEffect(() => {
+    if (swErr || rpErr || rdErr || ajErr)
       showTxToast(
         'error',
         null,
-        (swErr || rpErr || rdErr)?.message
+        (swErr || rpErr || rdErr || ajErr)?.message
       );
-  }, [swErr, rpErr, rdErr]);
+  }, [swErr, rpErr, rdErr, ajErr]);
 
   if (!job) {
     return (
@@ -168,12 +180,25 @@ export default function JobDetailPage() {
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Escrow Actions</h2>
 
                 <div className="space-y-3">
+                  {/* Freelancer: Accept Public Job */}
+                  {isFreelancer && !job.freelancerWallet && job.status === 'Funded' && (
+                    <Button
+                      onClick={() => acceptJob(job.onChainJobId || job.escrowId)}
+                      loading={aj}
+                      className="w-full"
+                      id="accept-job-btn"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Accept Job
+                    </Button>
+                  )}
+
                   {/* Freelancer: Submit Work */}
-                  {iAmFreelancer && job.status === 'Funded' && (
+                  {iAmFreelancer && job.status === 'Funded' && job.freelancerWallet && (
                     <Button
                       onClick={() =>
                       deliverMilestone(
-                        job.escrowId,
+                        job.onChainJobId || job.escrowId,
                         0,
                         "0x0000000000000000000000000000000000000000000000000000000000000000"
                       )
@@ -190,7 +215,7 @@ export default function JobDetailPage() {
                   {/* Client: Release Payment */}
                   {iAmClient && ['In Progress', 'Submitted'].includes(job.status) && (
                     <Button
-                      onClick={() => releaseMilestone(job.escrowId, 0)}
+                      onClick={() => releaseMilestone(job.onChainJobId || job.escrowId, 0)}
                       loading={rp}
                       className="w-full"
                       id="release-payment-btn"
@@ -231,7 +256,7 @@ export default function JobDetailPage() {
                               size="sm"
                               loading={rd}
                               onClick={() => raiseDispute(
-                                              job.escrowId,
+                                              job.onChainJobId || job.escrowId,
                                               0,
                                               disputeReason
                                             )}
@@ -261,7 +286,7 @@ export default function JobDetailPage() {
                         variant="secondary"
                         size="sm"
                         loading={rp}
-                        onClick={() => releaseMilestone(job.escrowId, 0)}
+                        onClick={() => releaseMilestone(job.onChainJobId || job.escrowId, 0)}
                         id="auto-release-btn"
                       >
                         Trigger Auto-Release
