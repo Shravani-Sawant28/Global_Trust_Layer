@@ -22,6 +22,7 @@ const {
   getJobs,
   getJobById,
   acceptJob,
+  linkOnChainId,
 } = require('../controllers/jobController');
 
 const { validateWalletBody } = require('../middleware/validateWallet');
@@ -37,6 +38,9 @@ router.get('/:id', getJobById);
 
 // POST /api/jobs/:id/accept
 router.post('/:id/accept', acceptJob);
+
+// PATCH /api/jobs/:id/link
+router.patch('/:id/link', linkOnChainId);
 
 // POST /api/jobs
 router.post(

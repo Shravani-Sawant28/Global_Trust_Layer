@@ -69,3 +69,6 @@ export const getTrustReport = (wallet) => api.get(`/api/trust/${wallet}`);
 
 /** Raise a dispute (off-chain record). */
 export const raiseDisputeRecord = (data) => api.post('/api/dispute', data);
+
+/** Manually link on-chain job ID to a DB job. */
+export const linkJobOnChain = (id, onChainJobId) => api.patch(`/api/jobs/${id}/link`, { onChainJobId });

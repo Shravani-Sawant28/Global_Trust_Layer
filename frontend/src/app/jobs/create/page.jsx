@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRole } from '@/hooks/useRole';
 import { useApp } from '@/context/AppContext';
-import { createJob as apiCreateJob } from '@/lib/api';
+import { createJob as apiCreateJob, linkJobOnChain } from '@/lib/api';
 import {
     useCreateEscrow,
     useFundJob,
@@ -60,6 +60,7 @@ export default function CreateJobPage() {
   ]);
   const [errors, setErrors] = useState({});
   const [createdJobId, setCreatedJobId] = useState(null);
+  const [dbJobId, setDbJobId] = useState(null);
 
   // ── Contract hook ───────────────────────────────────────────────
   const {
@@ -136,6 +137,12 @@ export default function CreateJobPage() {
 
       const jobId = BigInt(rawJobId);
       setCreatedJobId(jobId);
+
+      if (dbJobId) {
+        linkJobOnChain(dbJobId, Number(jobId)).catch(err => {
+          console.warn('Failed to manually link on-chain ID to DB:', err);
+        });
+      }
 
       approve(
         BigInt(
@@ -254,7 +261,7 @@ export default function CreateJobPage() {
 
     try {
       const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find((a) => a.type === 'wallet')?.address;
-      await apiCreateJob({
+      const res = await apiCreateJob({
         clientWallet: walletAddress,
         freelancerWallet: isPublic ? null : freelancer,
         title,
@@ -266,6 +273,9 @@ export default function CreateJobPage() {
         isPublic,
         milestones: milestoneOn ? milestones.map(m => ({ title: m.title, amountRaw: (Number(m.amount)*1000000).toString() })) : []
       });
+      if (res && res.job) {
+        setDbJobId(res.job.id);
+      }
       console.log('Successfully pre-created job in database');
     } catch (err) {
       console.warn('Failed to pre-create job in DB (backend might not be running). Proceeding with on-chain creation...', err);

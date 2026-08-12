@@ -64,10 +64,11 @@ export default function DashboardPage() {
   if (!authenticated || !role) return null;
 
   // ── Filter jobs by role ─────────────────────────────────────────
+  const walletAddressLower = walletAddress?.toLowerCase();
   const myJobs = jobs.filter((j) =>
     isClient
-      ? j.clientWallet === walletAddress || true // show all mocks for demo
-      : j.freelancerWallet === walletAddress || j.status !== 'Funded' // show assigned mocks
+      ? j.clientWallet?.toLowerCase() === walletAddressLower || true // show all mocks for demo
+      : j.freelancerWallet?.toLowerCase() === walletAddressLower // show assigned jobs
   );
 
   // ── Stats ───────────────────────────────────────────────────────

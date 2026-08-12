@@ -311,3 +311,41 @@ exports.acceptJob = async (req, res, next) => {
     next(err);
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+//  PATCH /api/jobs/:id/link
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * linkOnChainId — manually links the on-chain job ID to the DB job.
+ * Used as a fallback if the blockchain event listener fails or misses the event.
+ * 
+ * Body params:
+ *  onChainJobId: number (required)
+ */
+exports.linkOnChainId = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      const err = new Error('Invalid job id'); err.statusCode = 400; return next(err);
+    }
+    const { onChainJobId } = req.body;
+    if (onChainJobId == null || isNaN(Number(onChainJobId))) {
+      const err = new Error('onChainJobId is required in body'); err.statusCode = 400; return next(err);
+    }
+    
+    let job = await jobQueries.getJobById(id);
+    if (!job) {
+      const err = new Error('Job not found'); err.statusCode = 404; return next(err);
+    }
+
+    if (job.on_chain_job_id == null) {
+      await jobQueries.linkJobToChain(id, Number(onChainJobId));
+      job.on_chain_job_id = Number(onChainJobId);
+    }
+    
+    return res.json({ success: true, message: 'On-chain ID linked successfully', job: formatJob(job) });
+  } catch (err) {
+    next(err);
+  }
+};
