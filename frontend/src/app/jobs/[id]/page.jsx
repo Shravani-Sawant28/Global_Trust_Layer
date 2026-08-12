@@ -67,8 +67,9 @@ export default function JobDetailPage() {
 
 
   const job = jobs.find((j) => String(j.id) === String(id) || String(j.onChainJobId) === String(id) || String(j.escrowId) === String(id));
+  const activeJobId = job?.onChainJobId ?? job?.on_chain_job_id ?? job?.escrowId ?? job?.id ?? (id ? Number(id) : undefined);
 
-  const { data: milestone } = useMilestone(job?.onChainJobId || job?.escrowId, 0);
+  const { data: milestone } = useMilestone(activeJobId, 0);
 
   useEffect(() => {
     console.log("Job Detail Context:", job);
@@ -183,7 +184,7 @@ export default function JobDetailPage() {
                   {/* Freelancer: Accept Public Job */}
                   {isFreelancer && !job.freelancerWallet && job.status === 'Funded' && (
                     <Button
-                      onClick={() => acceptJob(job.onChainJobId || job.escrowId)}
+                      onClick={() => acceptJob(activeJobId)}
                       loading={aj}
                       className="w-full"
                       id="accept-job-btn"
@@ -198,7 +199,7 @@ export default function JobDetailPage() {
                     <Button
                       onClick={() =>
                       deliverMilestone(
-                        job.onChainJobId || job.escrowId,
+                        activeJobId,
                         0,
                         "0x0000000000000000000000000000000000000000000000000000000000000000"
                       )
@@ -215,7 +216,7 @@ export default function JobDetailPage() {
                   {/* Client: Release Payment */}
                   {iAmClient && ['In Progress', 'Submitted'].includes(job.status) && (
                     <Button
-                      onClick={() => releaseMilestone(job.onChainJobId || job.escrowId, 0)}
+                      onClick={() => releaseMilestone(activeJobId, 0)}
                       loading={rp}
                       className="w-full"
                       id="release-payment-btn"
@@ -256,7 +257,7 @@ export default function JobDetailPage() {
                               size="sm"
                               loading={rd}
                               onClick={() => raiseDispute(
-                                              job.onChainJobId || job.escrowId,
+                                              activeJobId,
                                               0,
                                               disputeReason
                                             )}

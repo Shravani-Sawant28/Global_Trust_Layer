@@ -128,8 +128,13 @@ export default function CreateJobPage() {
         topics: log.topics,
       });
 
-      const jobId = decoded.args.job_id;
+      const rawJobId = decoded.args?.jobId ?? decoded.args?.job_id;
+      if (rawJobId === undefined) {
+        console.warn('JobCreated event decoded but jobId was missing:', decoded.args);
+        return;
+      }
 
+      const jobId = BigInt(rawJobId);
       setCreatedJobId(jobId);
 
       approve(
@@ -138,11 +143,11 @@ export default function CreateJobPage() {
         )
       );
 
-      console.log("Created Job ID:", jobId.toString());
+      console.log('Created Job ID:', jobId.toString());
     } catch (err) {
       console.error(err);
     }
-  }, [receipt]);
+  }, [receipt, budget, approve]);
 
   useEffect(() => {
       if (!createdJobId) return;

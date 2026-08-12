@@ -75,6 +75,10 @@ export function useFundJob() {
   });
 
   const fundJob = (jobId) => {
+    if (jobId === undefined || jobId === null || jobId === '') {
+      console.error("fundJob called with invalid jobId:", jobId);
+      return;
+    }
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
@@ -105,6 +109,10 @@ export function useAcceptJob() {
   });
 
   const acceptJob = (jobId) => {
+    if (jobId === undefined || jobId === null || jobId === '') {
+      console.error("acceptJob called with invalid jobId:", jobId);
+      return;
+    }
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
@@ -133,6 +141,10 @@ export function useDeliverMilestone() {
     milestoneId,
     deliveryHash
   ) => {
+    if (jobId === undefined || jobId === null || jobId === '' || milestoneId === undefined || milestoneId === null) {
+      console.error("deliverMilestone called with invalid parameters:", { jobId, milestoneId });
+      return;
+    }
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
@@ -164,6 +176,10 @@ export function useReleaseMilestone() {
     jobId,
     milestoneId
   ) => {
+    if (jobId === undefined || jobId === null || jobId === '' || milestoneId === undefined || milestoneId === null) {
+      console.error("releaseMilestone called with invalid parameters:", { jobId, milestoneId });
+      return;
+    }
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
@@ -195,6 +211,10 @@ export function useRaiseDispute() {
     milestoneId,
     reason
   ) => {
+    if (jobId === undefined || jobId === null || jobId === '' || milestoneId === undefined || milestoneId === null) {
+      console.error("raiseDispute called with invalid parameters:", { jobId, milestoneId });
+      return;
+    }
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
@@ -228,6 +248,10 @@ export function useAgreeToSplit() {
     milestoneId,
     clientBps
   ) => {
+    if (disputeId === undefined || disputeId === null || disputeId === '' || milestoneId === undefined || milestoneId === null || clientBps === undefined || clientBps === null) {
+      console.error("agreeToSplit called with invalid parameters:", { disputeId, milestoneId, clientBps });
+      return;
+    }
     writeContract({
       address: CONTRACTS.ESCROW,
       abi: EscrowABI,
@@ -259,29 +283,35 @@ export function useJobCount() {
 }
 
 export function useJobBasic(jobId) {
+  const isValid = jobId !== undefined && jobId !== null && jobId !== '' && !isNaN(Number(jobId));
   return useReadContract({
     address: CONTRACTS.ESCROW,
     abi: EscrowABI,
     functionName: "getJob",
-    args: jobId !== undefined && jobId !== null ? [BigInt(jobId)] : undefined,
+    args: isValid ? [BigInt(jobId)] : undefined,
     query: {
-      enabled: jobId !== undefined && jobId !== null,
+      enabled: isValid,
     },
   });
 }
 
 export function useMilestone(jobId, milestoneId) {
+  const isValid =
+    jobId !== undefined &&
+    jobId !== null &&
+    jobId !== '' &&
+    !isNaN(Number(jobId)) &&
+    milestoneId !== undefined &&
+    milestoneId !== null &&
+    milestoneId !== '' &&
+    !isNaN(Number(milestoneId));
   return useReadContract({
     address: CONTRACTS.ESCROW,
     abi: EscrowABI,
     functionName: "getMilestone",
-    args: jobId !== undefined && jobId !== null && milestoneId !== undefined && milestoneId !== null ? [BigInt(jobId), BigInt(milestoneId)] : undefined,
+    args: isValid ? [BigInt(jobId), BigInt(milestoneId)] : undefined,
     query: {
-      enabled:
-        jobId !== undefined &&
-        milestoneId !== undefined &&
-        jobId !== null &&
-        milestoneId !== null,
+      enabled: isValid,
     },
   });
 }
