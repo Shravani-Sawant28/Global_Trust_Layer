@@ -44,13 +44,13 @@ export default function TrustPassportPage() {
     : profile?.totalEarned || '0';
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] dark:bg-[#0F0F11]">
+    <div className="min-h-screen bg-[#FFFAF3] dark:bg-[#0F0D0B]">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Back */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-sm text-[#9A7F65] dark:text-[#6B5A4A] hover:text-[#F62440] dark:hover:text-[#FF4D63] transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -60,18 +60,18 @@ export default function TrustPassportPage() {
         <div className="card p-8 mb-6">
           <div className="flex items-start gap-6">
             {/* Avatar */}
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-brand-100 dark:bg-brand-900/40 text-2xl font-black text-brand-600 dark:text-brand-400">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#FFE5BF] dark:bg-[#2D2822] text-2xl font-black text-[#6B5744] dark:text-[#9A8470]">
               {wallet?.slice(2, 4).toUpperCase()}
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                <h1 className="text-2xl font-bold text-[#1C1410] dark:text-[#F5EDE0] tracking-tight">
                   {formatAddress(wallet)}
                 </h1>
                 {profile?.role && (
-                  <span className="rounded-full bg-brand-50 dark:bg-brand-900/30 border border-brand-100 dark:border-brand-800/40 px-3 py-0.5 text-xs font-semibold text-brand-600 dark:text-brand-400">
+                  <span className="rounded-full border px-3 py-0.5 text-xs font-semibold text-[#3D2E16] dark:text-[#D4C4B0]" style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}>
                     {profile.role}
                   </span>
                 )}
@@ -80,7 +80,7 @@ export default function TrustPassportPage() {
                 href={getExplorerAddressUrl(wallet)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 hover:text-brand-500 dark:hover:text-brand-400 transition-colors mb-4"
+                className="inline-flex items-center gap-1.5 text-xs text-[#C8A87A] dark:text-[#6B5A4A] hover:text-[#F62440] dark:hover:text-[#FF4D63] transition-colors mb-4"
               >
                 <Globe className="h-3.5 w-3.5" />
                 {wallet}
@@ -116,7 +116,7 @@ export default function TrustPassportPage() {
             <div className="grid grid-cols-3 gap-4">
               {[
                 { label: 'Trust Score', value: profileLoading ? '—' : profile?.trustScore ?? 0, color: trustScoreColor(profile?.trustScore ?? 0) },
-                { label: 'Jobs Done',   value: profileLoading ? '—' : profile?.jobsCompleted ?? 0, color: 'text-gray-900 dark:text-white' },
+                { label: 'Jobs Done',   value: profileLoading ? '—' : profile?.jobsCompleted ?? 0, color: 'text-[#1C1410] dark:text-[#F5EDE0]' },
                 { label: 'Disputes',    value: profileLoading ? '—' : profile?.disputeCount ?? 0,  color: (profile?.disputeCount || 0) > 0 ? 'text-red-500' : 'text-green-500' },
               ].map((s) => (
                 <div key={s.label} className="card p-4 text-center">
@@ -144,9 +144,9 @@ export default function TrustPassportPage() {
               ) : (
                 <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
                   {walletJobs.map((job) => (
-                    <Link key={job.id} href={`/jobs/${job.id}`} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors group">
+                    <Link key={job.id} href={`/jobs/${job.id}`} className="flex items-center gap-4 px-6 py-4 hover:bg-[#FFFAF3] dark:hover:bg-[#221E1A] transition-colors group">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 line-clamp-1 transition-colors">
+                        <p className="text-sm font-medium text-[#1C1410] dark:text-[#F5EDE0] group-hover:text-[#F62440] dark:group-hover:text-[#FF4D63] line-clamp-1 transition-colors">
                           {job.title}
                         </p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{job.category}</p>
@@ -176,8 +176,8 @@ export default function TrustPassportPage() {
 
 function MetaPill({ icon, label }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-      <span className="text-brand-400">{icon}</span>
+    <span className="inline-flex items-center gap-1.5 text-xs text-[#9A7F65] dark:text-[#6B5A4A]">
+      <span className="text-[#C8A87A]">{icon}</span>
       {label}
     </span>
   );

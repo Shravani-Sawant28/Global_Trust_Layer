@@ -29,7 +29,7 @@ export function showTxToast(type, txHash, message) {
               href={getExplorerTxUrl(txHash)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 font-medium"
+              className="mt-1 inline-flex items-center gap-1 text-xs text-[#F62440] hover:text-[#D91C36] font-medium"
             >
               View on Arbiscan
               <ExternalLink className="h-3 w-3" />

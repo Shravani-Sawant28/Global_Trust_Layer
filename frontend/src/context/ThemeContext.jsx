@@ -7,10 +7,15 @@ const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState('light');
 
-  // Initialise from localStorage on mount
+  // Initialise from localStorage on mount — default is always light
   useEffect(() => {
+    // Clear any OS-inherited dark setting saved before v2 redesign
+    if (!localStorage.getItem('gtl_theme_v2')) {
+      localStorage.removeItem('gtl_theme');
+      localStorage.setItem('gtl_theme_v2', '1');
+    }
     const stored = localStorage.getItem('gtl_theme');
-    const preferred = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const preferred = stored || 'light';   // default: light
     setTheme(preferred);
     document.documentElement.classList.toggle('dark', preferred === 'dark');
   }, []);

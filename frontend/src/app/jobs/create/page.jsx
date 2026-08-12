@@ -288,7 +288,7 @@ export default function CreateJobPage() {
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
       <Sidebar />
 
-      <div className="flex-1 overflow-y-auto bg-[#F9FAFB] dark:bg-[#0F0F11]">
+      <div className="flex-1 overflow-y-auto bg-[#FFFAF3] dark:bg-[#0F0D0B]">
         <div className="max-w-6xl mx-auto px-6 py-8">
 
           {/* Header */}
@@ -308,7 +308,7 @@ export default function CreateJobPage() {
                 {/* Basic info card */}
                 <div className="card p-6 space-y-5">
                   <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-brand-500" />
+                    <FileText className="h-4 w-4 text-[#C8A87A]" />
                     Job Details
                   </h2>
 
@@ -342,7 +342,7 @@ export default function CreateJobPage() {
                 {/* Budget card */}
                 <div className="card p-6 space-y-5">
                   <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-brand-500" />
+                    <DollarSign className="h-4 w-4 text-[#C8A87A]" />
                     Budget & Payment
                   </h2>
 
@@ -394,7 +394,7 @@ export default function CreateJobPage() {
                 {/* Freelancer card */}
                 <div className="card p-6 space-y-4">
                   <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-brand-500" />
+                    <Users className="h-4 w-4 text-[#C8A87A]" />
                     Hiring
                   </h2>
 
@@ -407,10 +407,10 @@ export default function CreateJobPage() {
                           key={opt}
                           type="button"
                           onClick={() => setIsPublic(pub)}
-                          className={`flex-1 rounded-xl border py-2.5 text-sm font-medium transition-all ${
+                          className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition-all ${
                             isPublic === pub
-                              ? 'border-brand-400 dark:border-brand-600 bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
-                              : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'
+                              ? 'border-[#F0D9B5] bg-[#FFE5BF] dark:bg-[#2D2822] text-[#3D2E16] dark:text-[#D4C4B0]'
+                              : 'border-[#F0D9B5] dark:border-[#352E26] text-[#9A7F65] dark:text-[#6B5A4A] hover:bg-[#FFF2DB] dark:hover:bg-[#221E1A]'
                           }`}
                         >
                           {opt}
@@ -449,8 +449,8 @@ export default function CreateJobPage() {
                       type="button"
                       onClick={() => setMilestoneOn((v) => !v)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        milestoneOn ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700'
-                      }`}
+                              milestoneOn ? 'bg-[#F62440]' : 'bg-[#F0D9B5] dark:bg-[#352E26]'
+                            }`}
                       role="switch"
                       aria-checked={milestoneOn}
                       id="milestone-toggle"
@@ -467,7 +467,7 @@ export default function CreateJobPage() {
                     <div className="space-y-3">
                       {milestones.map((m, i) => (
                         <div key={m.id} className="flex items-center gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/30 text-xs font-bold text-brand-600 dark:text-brand-400">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FFE5BF] dark:bg-[#2D2822] text-xs font-bold text-[#6B5744] dark:text-[#9A8470]">
                             {i + 1}
                           </span>
                           <input
@@ -503,7 +503,7 @@ export default function CreateJobPage() {
                       <button
                         type="button"
                         onClick={addMilestone}
-                        className="flex items-center gap-2 text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
+                        className="flex items-center gap-2 text-sm font-medium text-[#F62440] hover:text-[#D91C36] dark:text-[#FF4D63] dark:hover:text-[#F62440] transition-colors"
                       >
                         <Plus className="h-4 w-4" />
                         Add milestone
@@ -572,7 +572,7 @@ export default function CreateJobPage() {
               <div className="lg:col-span-2 sticky top-6 self-start">
                 <div className="card p-6 space-y-5">
                   <div className="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 pb-4">
-                    <Eye className="h-4 w-4 text-brand-500" />
+                    <Eye className="h-4 w-4 text-[#C8A87A]" />
                     <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Job Preview</h2>
                   </div>
 

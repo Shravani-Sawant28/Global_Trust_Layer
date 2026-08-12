@@ -52,14 +52,14 @@ function OnboardingContent() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#F9FAFB] dark:bg-[#0F0F11] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-4rem)] bg-[#FFFAF3] dark:bg-[#0F0D0B] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
 
         {/* Step indicator */}
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/40 px-4 py-1.5 mb-4">
-            <span className="h-2 w-2 rounded-full bg-brand-500" />
-            <span className="text-xs font-semibold text-brand-600 dark:text-brand-400">Onboarding</span>
+          <div className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-4" style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}>
+            <span className="h-2 w-2 rounded-full bg-[#F62440]" />
+            <span className="text-xs font-semibold text-[#6B5744] dark:text-[#9A8470]">Onboarding</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
             {!authenticated ? 'Connect your wallet' : 'Choose your role'}
@@ -77,9 +77,9 @@ function OnboardingContent() {
           {/* ── Step 1: Connect Wallet ── */}
           {!authenticated ? (
             <div className="space-y-5">
-              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 p-4">
+              <div className="rounded-lg border px-4 py-4" style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}>
                 <div className="flex items-start gap-3 mb-4">
-                  <Shield className="mt-0.5 h-5 w-5 text-brand-500 shrink-0" />
+                  <Shield className="mt-0.5 h-5 w-5 text-[#C8A87A] shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">What connecting means</p>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -120,8 +120,8 @@ function OnboardingContent() {
                   icon: <Briefcase className="h-6 w-6" />,
                   title: "I'm a Client",
                   subtitle: 'Post jobs, lock escrow funds, approve work',
-                  color: 'text-brand-500',
-                  selectedBorder: 'border-brand-500 bg-brand-50 dark:bg-brand-900/20',
+                  color: 'text-[#F62440]',
+                  selectedBorder: 'border-[#F62440]/30 bg-[#FFE5BF] dark:bg-[#2D2822]',
                 },
                 {
                   value: 'FREELANCER',
@@ -138,7 +138,7 @@ function OnboardingContent() {
                   className={`w-full flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all duration-150 ${
                     selectedRole === option.value
                       ? option.selectedBorder
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      : 'border-[#F0D9B5] dark:border-[#352E26] hover:border-[#F62440]/30 dark:hover:border-[#F62440]/20'
                   }`}
                 >
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 ${option.color}`}>
@@ -149,7 +149,7 @@ function OnboardingContent() {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{option.subtitle}</p>
                   </div>
                   {selectedRole === option.value && (
-                    <CheckCircle2 className="h-5 w-5 text-brand-500 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   )}
                 </button>
               ))}

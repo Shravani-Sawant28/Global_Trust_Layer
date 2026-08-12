@@ -118,11 +118,11 @@ export default function JobDetailPage() {
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
       <Sidebar />
 
-      <div className="flex-1 overflow-y-auto bg-[#F9FAFB] dark:bg-[#0F0F11]">
+      <div className="flex-1 overflow-y-auto bg-[#FFFAF3] dark:bg-[#0F0D0B]">
         <div className="max-w-4xl mx-auto px-6 py-8">
 
           {/* Back */}
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors mb-6">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[#9A7F65] dark:text-[#6B5A4A] hover:text-[#F62440] dark:hover:text-[#FF4D63] transition-colors mb-6">
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Link>
@@ -159,8 +159,8 @@ export default function JobDetailPage() {
                   <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Milestones</h2>
                   <div className="space-y-3">
                     {job.milestones.map((m, i) => (
-                      <div key={m.id} className="flex items-center gap-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 px-4 py-3">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/30 text-xs font-bold text-brand-600 dark:text-brand-400">
+                      <div key={m.id} className="flex items-center gap-4 rounded-lg px-4 py-3" style={{ backgroundColor: '#FFF2DB' }}>
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FFE5BF] dark:bg-[#2D2822] text-xs font-bold text-[#6B5744] dark:text-[#9A8470]">
                           {i + 1}
                         </span>
                         <p className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200">{m.title}</p>
@@ -360,14 +360,14 @@ function PartyRow({ label, wallet, score }) {
     <div>
       <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{label}</p>
       <div className="flex items-center gap-2">
-        <div className="h-7 w-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-bold text-brand-600 dark:text-brand-400">
+        <div className="h-7 w-7 rounded-full bg-[#FFE5BF] dark:bg-[#2D2822] flex items-center justify-center text-xs font-bold text-[#6B5744] dark:text-[#9A8470]">
           {wallet?.slice(2, 4).toUpperCase()}
         </div>
         <a
           href={getExplorerAddressUrl(wallet)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-medium text-gray-700 dark:text-gray-300 hover:text-brand-500 dark:hover:text-brand-400 flex items-center gap-1 transition-colors"
+          className="text-xs font-medium text-[#3D2E16] dark:text-[#D4C4B0] hover:text-[#F62440] dark:hover:text-[#FF4D63] flex items-center gap-1 transition-colors"
         >
           {formatAddress(wallet)}
           <ExternalLink className="h-3 w-3" />

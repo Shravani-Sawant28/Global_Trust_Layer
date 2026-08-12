@@ -13,13 +13,14 @@ export default function TrustBadge({ score = 0, className }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2 py-0.5 text-xs font-semibold',
+        'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-semibold',
         color,
         className
       )}
+      style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}
       title={`Trust Score: ${score}/100`}
     >
-      <Shield className="h-3 w-3" />
+      <Shield className="h-3 w-3 flex-shrink-0" />
       {score}
     </span>
   );
