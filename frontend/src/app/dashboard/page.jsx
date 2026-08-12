@@ -87,18 +87,18 @@ export default function DashboardPage() {
       <Sidebar />
 
       {/* ── Main content ── */}
-      <div className="flex-1 overflow-y-auto bg-[#F9FAFB] dark:bg-[#0F0F11]">
+      <div className="flex-1 overflow-y-auto bg-[#FFFAF3] dark:bg-[#0F0D0B]">
         <div className="max-w-6xl mx-auto px-6 py-8">
 
           {/* ── Page header ── */}
           <div className="flex items-start justify-between mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+              <h1 className="text-2xl font-bold text-[#1C1410] dark:text-[#F5EDE0] tracking-tight">
                 {isClient ? 'Client Dashboard' : 'Freelancer Dashboard'}
               </h1>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {walletAddress ? formatAddress(walletAddress) : 'Loading wallet…'} ·{' '}
-                <span className="font-medium text-brand-600 dark:text-brand-400">
+                <span className="font-medium text-[#F62440] dark:text-[#FF4D63]">
                   {isClient ? 'Client' : 'Freelancer'}
                 </span>
               </p>
@@ -126,11 +126,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 mb-8">
 
             {/* Trust score card */}
-            <div className="lg:col-span-1 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 flex flex-col items-center justify-center shadow-card">
+            <div className="lg:col-span-1 rounded-xl border bg-white dark:bg-[#1A1714] p-6 flex flex-col items-center justify-center shadow-card" style={{ borderColor: '#F0D9B5' }}>
               <TrustScore score={trustScore} size="md" />
               <Link
                 href={walletAddress ? `/trust/${walletAddress}` : '#'}
-                className="mt-4 text-xs font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 flex items-center gap-1 transition-colors"
+                className="mt-4 text-xs font-medium text-[#F62440] hover:text-[#D91C36] dark:text-[#FF4D63] flex items-center gap-1 transition-colors"
               >
                 <Shield className="h-3.5 w-3.5" />
                 View Trust Passport
@@ -141,16 +141,16 @@ export default function DashboardPage() {
             <div className="lg:col-span-3 grid grid-cols-3 gap-5">
               <StatsCard
                 title={isClient ? 'Locked in Escrow' : 'Active Jobs'}
-                value={isClient ? `${lockedAmount} Mixed` : activeCount}
+                value={isClient ? `${lockedAmount} USDC` : activeCount}
                 sub={isClient ? `across ${activeCount} active jobs` : 'currently working on'}
-                icon={<Coins className="h-5 w-5 text-brand-500" />}
-                accent="bg-brand-50 dark:bg-brand-900/30"
+                icon={<Coins className="h-5 w-5 text-[#C8A87A]" />}
+                accent="bg-[#FFF2DB] dark:bg-[#2D2822]"
               />
               <StatsCard
                 title="Completed"
                 value={completedCount}
                 sub={isClient ? 'jobs successfully delivered' : 'jobs completed'}
-                icon={<CheckCircle2 className="h-5 w-5 text-green-500" />}
+                icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
                 accent="bg-green-50 dark:bg-green-900/20"
               />
               <StatsCard
@@ -165,15 +165,15 @@ export default function DashboardPage() {
 
           {/* ── Quick actions (freelancer only) ── */}
           {isFreelancer && (
-            <div className="mb-8 rounded-2xl border border-brand-100 dark:border-brand-800/30 bg-brand-50 dark:bg-brand-900/10 p-5">
-              <div className="flex items-center justify-between">
+            <div className="mb-8 rounded-xl border p-5" style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}>
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-brand-700 dark:text-brand-300">Ready for new work?</p>
-                  <p className="mt-0.5 text-xs text-brand-600/70 dark:text-brand-400/70">
+                  <p className="text-sm font-semibold text-[#3D2E16] dark:text-[#D4C4B0]">Ready for new work?</p>
+                  <p className="mt-0.5 text-xs text-[#9A7F65] dark:text-[#6B5A4A]">
                     Browse open jobs posted by verified clients.
                   </p>
                 </div>
-                <Link href="/jobs/browse">
+                <Link href="/jobs/browse" className="flex-shrink-0">
                   <Button size="sm" variant="secondary">
                     Browse Jobs →
                   </Button>
@@ -185,11 +185,11 @@ export default function DashboardPage() {
           {/* ── Jobs table ── */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-[#1C1410] dark:text-[#F5EDE0]">
                 {isClient ? 'My Posted Jobs' : 'My Work'}
               </h2>
               {isClient && (
-                <Link href="/jobs/create" className="text-xs font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 flex items-center gap-1">
+                <Link href="/jobs/create" className="text-xs font-medium text-[#F62440] hover:text-[#D91C36] dark:text-[#FF4D63] flex items-center gap-1 transition-colors">
                   <Plus className="h-3.5 w-3.5" />
                   New Job
                 </Link>

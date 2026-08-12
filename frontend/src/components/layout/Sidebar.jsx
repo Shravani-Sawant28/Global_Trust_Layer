@@ -43,23 +43,26 @@ export default function Sidebar() {
   const allLinks = [...links, ...SHARED_LINKS];
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+    <aside className="flex h-full w-60 flex-col border-r bg-[#FFFAF3] dark:bg-[#0F0D0B]"
+      style={{ borderColor: '#F0D9B5' }}>
+
       {/* Trust passport shortcut */}
       {walletAddress && (
         <Link
           href={`/trust/${walletAddress}`}
-          className="m-3 flex items-center gap-3 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/40 px-4 py-3 hover:bg-brand-100 dark:hover:bg-brand-900/30 transition-colors"
+          className="m-3 flex items-center gap-3 rounded-xl border px-4 py-3 hover:bg-[#FFE5BF] dark:hover:bg-[#2D2822] transition-colors group"
+          style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500">
-            <Shield className="h-4.5 w-4.5 text-white" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F62440] shadow-brand flex-shrink-0">
+            <Shield className="h-4 w-4 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-brand-600 dark:text-brand-400">Trust Passport</p>
-            <p className="truncate text-xs text-brand-500/70 dark:text-brand-500/60">
+            <p className="text-xs font-semibold text-[#F62440] dark:text-[#FF4D63]">Trust Passport</p>
+            <p className="truncate text-xs text-[#9A7F65] dark:text-[#6B5A4A]">
               {formatAddress(walletAddress)}
             </p>
           </div>
-          <ChevronRight className="h-4 w-4 text-brand-400" />
+          <ChevronRight className="h-4 w-4 text-[#C8A87A] dark:text-[#6B5A4A] flex-shrink-0 group-hover:text-[#F62440] transition-colors" />
         </Link>
       )}
 
@@ -73,11 +76,13 @@ export default function Sidebar() {
               href={href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                  ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-[#FFE5BF] dark:bg-[#2D2822] text-[#F62440] dark:text-[#FF4D63]'
+                  : 'text-[#6B5744] dark:text-[#9A8470] hover:bg-[#FFF2DB] dark:hover:bg-[#221E1A] hover:text-[#3D2E16] dark:hover:text-[#F5EDE0]'
               }`}
             >
-              <Icon className={`h-4.5 w-4.5 ${active ? 'text-brand-500' : 'text-gray-400 dark:text-gray-500'}`} />
+              <Icon className={`h-4 w-4 flex-shrink-0 ${
+                active ? 'text-[#F62440] dark:text-[#FF4D63]' : 'text-[#C8A87A] dark:text-[#6B5A4A]'
+              }`} />
               {label}
             </Link>
           );
@@ -85,12 +90,12 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom settings link */}
-      <div className="border-t border-gray-100 dark:border-gray-800 p-3">
+      <div className="border-t p-3" style={{ borderColor: '#F0D9B5' }}>
         <MintUSDCButton />
         <Link href="/settings"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 mt-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 mt-2 text-sm font-medium text-[#9A7F65] dark:text-[#6B5A4A] hover:bg-[#FFF2DB] dark:hover:bg-[#221E1A] hover:text-[#3D2E16] dark:hover:text-[#F5EDE0] transition-colors"
         >
-          <Settings className="h-4.5 w-4.5" />
+          <Settings className="h-4 w-4 text-[#C8A87A] dark:text-[#4A3E32]" />
           Settings
         </Link>
       </div>

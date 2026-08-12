@@ -6,13 +6,13 @@ import { formatAddress } from '@/lib/utils';
 import StatusPill from '@/components/ui/StatusPill';
 import TrustBadge from '@/components/trust/TrustBadge';
 import { format } from 'date-fns';
-import { MoreVertical, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 const TABS = ['My Jobs', 'Payments', 'Disputes'];
 
 /**
- * JobsTable — tabbed transaction feed matching the Open Money-style
- * screenshot reference. Shows My Jobs / Payments / Disputes tabs.
+ * JobsTable — tabbed transaction feed.
+ * Shows My Jobs / Payments / Disputes tabs.
  *
  * @param {object[]} jobs         - Full job list for the wallet
  * @param {string}   walletAddress - Current user's wallet
@@ -30,9 +30,11 @@ export default function JobsTable({ jobs = [], walletAddress, role }) {
   });
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+    <div className="rounded-xl border bg-white dark:bg-[#1A1714] overflow-hidden shadow-card"
+      style={{ borderColor: '#F0D9B5' }}>
+
       {/* Tab header */}
-      <div className="flex border-b border-gray-100 dark:border-gray-800 px-6">
+      <div className="flex border-b px-6" style={{ borderColor: '#F0D9B5' }}>
         {TABS.map((tab) => {
           const count =
             tab === 'My Jobs'  ? jobs.length :
@@ -43,24 +45,24 @@ export default function JobsTable({ jobs = [], walletAddress, role }) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`relative flex items-center gap-2 px-4 py-4 text-sm font-medium transition-colors ${
+              className={`relative flex items-center gap-2 px-4 py-3.5 text-sm font-medium transition-colors ${
                 activeTab === tab
-                  ? 'text-brand-600 dark:text-brand-400'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'text-[#F62440] dark:text-[#FF4D63]'
+                  : 'text-[#9A7F65] dark:text-[#6B5A4A] hover:text-[#3D2E16] dark:hover:text-[#D4C4B0]'
               }`}
             >
               {tab}
               {count > 0 && (
-                <span className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
+                <span className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${
                   activeTab === tab
-                    ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                    ? 'bg-[#FFE5BF] dark:bg-[#2D2822] text-[#F62440] dark:text-[#FF4D63]'
+                    : 'bg-[#FFF2DB] dark:bg-[#221E1A] text-[#9A7F65] dark:text-[#6B5A4A]'
                 }`}>
                   {count}
                 </span>
               )}
               {activeTab === tab && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-500 rounded-t-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F62440] rounded-t-full" />
               )}
             </button>
           );
@@ -70,8 +72,13 @@ export default function JobsTable({ jobs = [], walletAddress, role }) {
       {/* Table */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-sm font-medium text-gray-400 dark:text-gray-500">No records found</p>
-          <p className="mt-1 text-xs text-gray-300 dark:text-gray-600">
+          <div className="h-12 w-12 rounded-xl bg-[#FFF2DB] dark:bg-[#221E1A] flex items-center justify-center mb-4">
+            <svg className="h-5 w-5 text-[#C8A87A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-[#6B5744] dark:text-[#9A8470]">No records found</p>
+          <p className="mt-1 text-xs text-[#C8A87A] dark:text-[#6B5A4A]">
             {activeTab === 'My Jobs' ? 'Post or browse jobs to get started.' : `No ${activeTab.toLowerCase()} yet.`}
           </p>
         </div>
@@ -79,16 +86,16 @@ export default function JobsTable({ jobs = [], walletAddress, role }) {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+              <tr className="border-b" style={{ backgroundColor: '#FFFAF3', borderColor: '#F0D9B5' }}>
                 {['Job', 'Budget', 'Deadline', 'Counterparty', 'Status', ''].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#C8A87A] dark:text-[#6B5A4A]">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
-              {filtered.map((job) => {
+            <tbody>
+              {filtered.map((job, idx) => {
                 const counterparty =
                   role === 'CLIENT' ? job.freelancerWallet : job.clientWallet;
                 const deadline = job.deadline
@@ -96,44 +103,47 @@ export default function JobsTable({ jobs = [], walletAddress, role }) {
                   : '—';
 
                 return (
-                  <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors group">
+                  <tr key={job.id}
+                    className="border-b last:border-0 hover:bg-[#FFFAF3] dark:hover:bg-[#1A1714] transition-colors group"
+                    style={{ borderColor: '#FAF0E4' }}>
+
                     {/* Job title */}
                     <td className="px-5 py-4 max-w-xs">
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="text-sm font-medium text-gray-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 line-clamp-1 transition-colors"
+                        className="text-sm font-semibold text-[#1C1410] dark:text-[#F5EDE0] hover:text-[#F62440] dark:hover:text-[#FF4D63] line-clamp-1 transition-colors"
                       >
                         {job.title}
                       </Link>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{job.category}</p>
+                      <p className="text-xs text-[#C8A87A] dark:text-[#6B5A4A] mt-0.5">{job.category}</p>
                     </td>
 
                     {/* Budget */}
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                      <span className="text-sm font-semibold text-[#1C1410] dark:text-[#F5EDE0]">
                         {job.budget} {job.currency}
                       </span>
                     </td>
 
                     {/* Deadline */}
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{deadline}</span>
+                      <span className="text-sm text-[#9A7F65] dark:text-[#6B5A4A]">{deadline}</span>
                     </td>
 
                     {/* Counterparty */}
                     <td className="px-5 py-4 whitespace-nowrap">
                       {counterparty ? (
                         <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
+                          <div className="h-6 w-6 rounded-full bg-[#FFE5BF] dark:bg-[#2D2822] flex items-center justify-center text-xs font-bold text-[#6B5744] dark:text-[#9A8470] flex-shrink-0">
                             {counterparty.slice(2, 4).toUpperCase()}
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-[#9A7F65] dark:text-[#6B5A4A]">
                             {formatAddress(counterparty)}
                           </span>
                           <TrustBadge score={job.clientTrustScore} />
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-300 dark:text-gray-600 italic">Open listing</span>
+                        <span className="text-xs italic text-[#C8A87A] dark:text-[#6B5A4A]">Open listing</span>
                       )}
                     </td>
 
@@ -146,7 +156,7 @@ export default function JobsTable({ jobs = [], walletAddress, role }) {
                     <td className="px-5 py-4">
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="invisible group-hover:visible inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:text-brand-400 font-medium"
+                        className="invisible group-hover:visible inline-flex items-center gap-1 text-xs text-[#F62440] dark:text-[#FF4D63] hover:text-[#D91C36] font-medium transition-colors"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                       </Link>

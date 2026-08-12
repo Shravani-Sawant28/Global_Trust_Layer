@@ -57,10 +57,10 @@ export default function DisputePage() {
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
       <Sidebar />
 
-      <div className="flex-1 overflow-y-auto bg-[#F9FAFB] dark:bg-[#0F0F11]">
+      <div className="flex-1 overflow-y-auto bg-[#FFFAF3] dark:bg-[#0F0D0B]">
         <div className="max-w-3xl mx-auto px-6 py-8">
 
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors mb-6">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[#9A7F65] dark:text-[#6B5A4A] hover:text-[#F62440] dark:hover:text-[#FF4D63] transition-colors mb-6">
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Link>
@@ -71,8 +71,8 @@ export default function DisputePage() {
               <AlertTriangle className="h-5 w-5 text-red-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Dispute Management</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{job.title}</p>
+              <h1 className="text-2xl font-bold text-[#1C1410] dark:text-[#F5EDE0] tracking-tight">Dispute Management</h1>
+              <p className="text-sm text-[#9A7F65] dark:text-[#6B5A4A]">{job.title}</p>
             </div>
             <StatusPill status={job.status} className="ml-auto" />
           </div>
@@ -128,7 +128,7 @@ export default function DisputePage() {
             {job.status === 'Disputed' && (
               <div className="card p-6 space-y-5">
                 <div className="flex items-center gap-2">
-                  <Scale className="h-4 w-4 text-brand-500" />
+                  <Scale className="h-4 w-4 text-[#C8A87A]" />
                   <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Propose a Payment Split</h2>
                 </div>
 
@@ -139,7 +139,7 @@ export default function DisputePage() {
                 {/* Slider */}
                 <div className="space-y-3">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-brand-600 dark:text-brand-400">Client: {clientPct}%</span>
+                    <span className="text-[#6B5744] dark:text-[#9A8470]">Client: {clientPct}%</span>
                     <span className="text-green-600 dark:text-green-400">Freelancer: {freelancerPct}%</span>
                   </div>
                   <input
@@ -149,21 +149,21 @@ export default function DisputePage() {
                     step={5}
                     value={clientPct}
                     onChange={(e) => setClientPct(Number(e.target.value))}
-                    className="w-full accent-brand-500"
+                    className="w-full accent-red-500"
                     id="split-slider"
                   />
                   {/* Visual split bar */}
                   <div className="flex h-3 rounded-full overflow-hidden">
-                    <div className="bg-brand-500 transition-all" style={{ width: `${clientPct}%` }} />
+                    <div className="bg-[#F62440] transition-all" style={{ width: `${clientPct}%` }} />
                     <div className="bg-green-500 flex-1 transition-all" />
                   </div>
                 </div>
 
                 {/* Amounts */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800/40 p-4 text-center">
-                    <p className="text-xs text-brand-600/70 dark:text-brand-400/70 mb-1">Client receives</p>
-                    <p className="text-lg font-bold text-brand-700 dark:text-brand-300">
+                  <div className="rounded-xl border p-4 text-center" style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}>
+                    <p className="text-xs text-[#9A7F65] dark:text-[#6B5A4A] mb-1">Client receives</p>
+                    <p className="text-lg font-bold text-[#3D2E16] dark:text-[#D4C4B0]">
                       {clientShare} {job.currency}
                     </p>
                   </div>
@@ -188,7 +188,7 @@ export default function DisputePage() {
             )}
 
             {/* Default resolution info */}
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-5">
+            <div className="rounded-xl border p-5" style={{ borderColor: '#F0D9B5' }}>
               <div className="flex items-start gap-3">
                 <Clock className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
                 <div>

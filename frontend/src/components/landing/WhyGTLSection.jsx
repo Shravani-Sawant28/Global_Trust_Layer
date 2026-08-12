@@ -11,29 +11,30 @@ const COMPARISON = [
 
 export default function WhyGTLSection() {
   return (
-    <section id="why-gtl" className="py-24 bg-gray-50 dark:bg-gray-950">
+    <section id="why-gtl" className="py-24" style={{ backgroundColor: '#FFF2DB' }}>
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold uppercase tracking-wider text-brand-500 mb-3">Why GTL</p>
-          <h2 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#F62440] mb-3">Why GTL</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-[#1C1410] dark:text-[#F5EDE0] tracking-tight">
             Stop paying 20% to platforms that don't even protect you
           </h2>
-          <p className="mt-4 text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+          <p className="mt-4 text-[#9A7F65] dark:text-[#6B5A4A] max-w-xl mx-auto leading-relaxed">
             GTL isn't a platform — it's the infrastructure layer underneath platforms. No company controls it. No one can delete your reputation.
           </p>
         </div>
 
         {/* Comparison card */}
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-card-md bg-white dark:bg-gray-900">
+        <div className="rounded-xl overflow-hidden shadow-card-md border" style={{ backgroundColor: '#FFFFFF', borderColor: '#F0D9B5' }}>
           {/* Column headers */}
-          <div className="grid grid-cols-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-            <div className="px-6 py-4 text-sm font-semibold text-gray-500 dark:text-gray-400">Feature</div>
-            <div className="px-6 py-4 text-sm font-semibold text-gray-500 dark:text-gray-400 border-l border-gray-200 dark:border-gray-800">
+          <div className="grid grid-cols-3 border-b" style={{ backgroundColor: '#FFFAF3', borderColor: '#F0D9B5' }}>
+            <div className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#C8A87A] dark:text-[#6B5A4A]">Feature</div>
+            <div className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#C8A87A] dark:text-[#6B5A4A] border-l" style={{ borderColor: '#F0D9B5' }}>
               Upwork / Traditional
             </div>
-            <div className="px-6 py-4 border-l-2 border-brand-200 dark:border-brand-700 bg-brand-50/50 dark:bg-brand-900/10">
-              <span className="text-sm font-bold text-brand-600 dark:text-brand-400">GlobalTrust</span>
+            <div className="px-6 py-4 border-l-2" style={{ borderColor: '#F62440', backgroundColor: '#FFF2DB' }}>
+              <span className="text-sm font-bold text-[#F62440]">GlobalTrust</span>
             </div>
           </div>
 
@@ -41,20 +42,20 @@ export default function WhyGTLSection() {
           {COMPARISON.map((row, i) => (
             <div
               key={row.feature}
-              className={`grid grid-cols-3 border-b border-gray-100 dark:border-gray-800 last:border-0 ${
-                i % 2 === 0 ? '' : 'bg-gray-50/40 dark:bg-gray-800/20'
-              }`}
+              className={`grid grid-cols-3 border-b last:border-0 ${i % 2 !== 0 ? '' : ''}`}
+              style={{ borderColor: '#FAF0E4' }}
             >
-              <div className="px-6 py-4 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="px-6 py-4 text-sm font-medium text-[#3D2E16] dark:text-[#D4C4B0]">
                 {row.feature}
               </div>
-              <div className="px-6 py-4 border-l border-gray-100 dark:border-gray-800 flex items-center gap-2">
+              <div className="px-6 py-4 border-l flex items-center gap-2" style={{ borderColor: '#FAF0E4' }}>
                 <X className="h-4 w-4 shrink-0 text-red-400" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">{row.traditional}</span>
+                <span className="text-sm text-[#9A7F65] dark:text-[#6B5A4A]">{row.traditional}</span>
               </div>
-              <div className="px-6 py-4 border-l-2 border-brand-200 dark:border-brand-700 bg-brand-50/30 dark:bg-brand-900/10 flex items-center gap-2">
-                <Check className="h-4 w-4 shrink-0 text-brand-500" />
-                <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{row.gtl}</span>
+              <div className="px-6 py-4 border-l-2 flex items-center gap-2"
+                style={{ borderColor: '#F62440', backgroundColor: '#FFFAF3' }}>
+                <Check className="h-4 w-4 shrink-0 text-green-500" />
+                <span className="text-sm font-semibold text-[#1C1410] dark:text-[#F5EDE0]">{row.gtl}</span>
               </div>
             </div>
           ))}
@@ -62,13 +63,13 @@ export default function WhyGTLSection() {
 
         {/* Fee highlight */}
         <div className="mt-8 grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 p-6 text-center">
+          <div className="rounded-xl border p-6 text-center" style={{ backgroundColor: '#FFF5F5', borderColor: '#FCA5A5' }}>
             <p className="text-4xl font-bold text-red-500 mb-1">20–30%</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Average Upwork platform fee</p>
+            <p className="text-sm text-[#9A7F65] dark:text-[#6B5A4A]">Average Upwork platform fee</p>
           </div>
-          <div className="rounded-2xl border border-brand-200 dark:border-brand-800/40 bg-brand-50 dark:bg-brand-900/20 p-6 text-center">
-            <p className="text-4xl font-bold text-brand-500 mb-1">2%</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">GTL protocol fee — that's it</p>
+          <div className="rounded-xl border p-6 text-center" style={{ backgroundColor: '#FFF2DB', borderColor: '#F0D9B5' }}>
+            <p className="text-4xl font-bold text-[#F62440] mb-1">2%</p>
+            <p className="text-sm text-[#9A7F65] dark:text-[#6B5A4A]">GTL protocol fee — that's it</p>
           </div>
         </div>
       </div>

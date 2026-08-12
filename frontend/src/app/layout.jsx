@@ -25,7 +25,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-[#F9FAFB] dark:bg-[#0F0F11] text-gray-900 dark:text-white antialiased`}>
+      <body className={`${inter.className} bg-[#FFFAF3] dark:bg-[#0F0D0B] text-[#1C1410] dark:text-[#F5EDE0] antialiased`}>
         <ClientProviders>
           <Toaster
             position="top-right"

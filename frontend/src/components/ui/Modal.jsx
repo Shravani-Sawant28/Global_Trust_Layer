@@ -52,21 +52,23 @@ export default function Modal({ isOpen, onClose, title, size = 'md', children })
         aria-modal="true"
         aria-labelledby="modal-title"
         className={cn(
-          'relative w-full rounded-2xl bg-white dark:bg-gray-900 shadow-card-lg animate-slide-up',
+          'relative w-full rounded-xl bg-white dark:bg-[#1A1714] shadow-card-lg animate-slide-up border',
           sizes[size]
         )}
+        style={{ borderColor: '#F0D9B5' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-4">
-          <h2 id="modal-title" className="text-base font-semibold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between border-b px-6 py-4"
+          style={{ borderColor: '#F0D9B5' }}>
+          <h2 id="modal-title" className="text-base font-semibold text-[#1C1410] dark:text-[#F5EDE0]">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 transition-colors"
+            className="rounded-lg p-1.5 text-[#C8A87A] dark:text-[#6B5A4A] hover:bg-[#FFF2DB] dark:hover:bg-[#2D2822] hover:text-[#3D2E16] dark:hover:text-[#F5EDE0] transition-colors"
             aria-label="Close modal"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 

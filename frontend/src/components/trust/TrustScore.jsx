@@ -23,16 +23,16 @@ export default function TrustScore({ score = 0, size = 'md', showLabel = true })
   const pct  = Math.min(Math.max(score, 0), 100);
   const dash = (pct / 100) * circ;
 
-  // Colour based on score
+  // Semantic colour based on score — preserved for meaningful communication
   const colorMap = {
-    green: '#22c55e',
-    indigo: '#6366f1',
-    amber: '#f59e0b',
-    red: '#ef4444',
+    green:  '#22c55e',  // 80+ = trustworthy
+    teal:   '#14b8a6',  // 60–79 = good
+    amber:  '#f59e0b',  // 40–59 = moderate
+    red:    '#ef4444',  // <40 = risky
   };
   const color =
-    pct >= 80 ? colorMap.green :
-    pct >= 60 ? colorMap.indigo :
+    pct >= 80 ? colorMap.green  :
+    pct >= 60 ? colorMap.teal   :
     pct >= 40 ? colorMap.amber  :
     colorMap.red;
 
@@ -44,9 +44,9 @@ export default function TrustScore({ score = 0, size = 'md', showLabel = true })
           <circle
             cx={c} cy={c} r={r}
             fill="none"
-            stroke="currentColor"
+            stroke="#FFE5BF"
             strokeWidth={sw}
-            className="text-gray-100 dark:text-gray-800"
+            className="dark:opacity-30"
           />
           {/* Fill */}
           <circle
@@ -67,7 +67,7 @@ export default function TrustScore({ score = 0, size = 'md', showLabel = true })
         </div>
       </div>
       {showLabel && (
-        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+        <p className="text-xs font-medium text-[#9A7F65] dark:text-[#6B5A4A] tracking-wide uppercase">
           Trust Score
         </p>
       )}
