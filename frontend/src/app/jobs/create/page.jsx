@@ -75,6 +75,7 @@ export default function CreateJobPage() {
 
   const {
       approve,
+      approveAndWait,
       isPending: approvePending,
       isConfirming: approveConfirming,
       isSuccess: approveSuccess,
@@ -106,61 +107,61 @@ export default function CreateJobPage() {
   useEffect(() => {
     if (!receipt) return;
 
-    try {
-      const log = receipt.logs.find((log) => {
-        try {
-          const decoded = decodeEventLog({
-            abi: EscrowABI,
-            data: log.data,
-            topics: log.topics,
-          });
-
-          return decoded.eventName === "JobCreated";
-        } catch {
-          return false;
-        }
-      });
-
-      if (!log) return;
-
-      const decoded = decodeEventLog({
-        abi: EscrowABI,
-        data: log.data,
-        topics: log.topics,
-      });
-
-      const rawJobId = decoded.args?.jobId ?? decoded.args?.job_id;
-      if (rawJobId === undefined) {
-        console.warn('JobCreated event decoded but jobId was missing:', decoded.args);
-        return;
-      }
-
-      const jobId = BigInt(rawJobId);
-      setCreatedJobId(jobId);
-
-      if (dbJobId) {
-        linkJobOnChain(dbJobId, Number(jobId)).catch(err => {
-          console.warn('Failed to manually link on-chain ID to DB:', err);
+    const processPostCreation = async () => {
+      try {
+        const log = receipt.logs.find((log) => {
+          try {
+            const decoded = decodeEventLog({
+              abi: EscrowABI,
+              data: log.data,
+              topics: log.topics,
+            });
+            return decoded.eventName === "JobCreated";
+          } catch {
+            return false;
+          }
         });
+
+        if (!log) return;
+
+        const decoded = decodeEventLog({
+          abi: EscrowABI,
+          data: log.data,
+          topics: log.topics,
+        });
+
+        const rawJobId = decoded.args?.jobId ?? decoded.args?.job_id;
+        if (rawJobId === undefined) {
+          console.warn('JobCreated event decoded but jobId was missing:', decoded.args);
+          return;
+        }
+
+        const jobId = BigInt(rawJobId);
+        setCreatedJobId(jobId);
+
+        if (dbJobId) {
+          linkJobOnChain(dbJobId, Number(jobId)).catch(err => {
+            console.warn('Failed to manually link on-chain ID to DB:', err);
+          });
+        }
+
+        console.log('Created Job ID:', jobId.toString());
+
+        // 1. Approve USDC and wait for it to be mined
+        await approveAndWait(
+          BigInt(Math.round(Number(budget) * 1_000_000))
+        );
+
+        // 2. Fund the job safely now that approval is confirmed
+        await fundJob(jobId);
+
+      } catch (err) {
+        console.error("Post-creation process failed:", err);
       }
+    };
 
-      approve(
-        BigInt(
-          Math.round(Number(budget) * 1_000_000)
-        )
-      );
-
-      console.log('Created Job ID:', jobId.toString());
-    } catch (err) {
-      console.error(err);
-    }
-  }, [receipt, budget, approve]);
-
-  useEffect(() => {
-      if (!createdJobId) return;
-
-      fundJob(BigInt(createdJobId));
-  }, [createdJobId]);
+    processPostCreation();
+  }, [receipt, budget, approveAndWait, fundJob, dbJobId]);
 
   useEffect(() => {
       if (!fundSuccess) return;
@@ -223,14 +224,29 @@ export default function CreateJobPage() {
   // ── Validation ──────────────────────────────────────────────────
   const validate = () => {
     const e = {};
+    const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find((a) => a.type === 'wallet')?.address;
+
     if (!title.trim())      e.title       = 'Job title is required';
     if (!description.trim()) e.description = 'Description is required';
     if (!budget || budgetNum <= 0) e.budget = 'Enter a valid budget';
     if (!deadline)          e.deadline    = 'Deadline is required';
-    if (!isPublic && !freelancer.match(/^0x[0-9a-fA-F]{40}$/))
-      e.freelancer = 'Enter a valid wallet address';
-    if (milestoneOn && !milestonesOk)
-      e.milestones = `Milestone total (${milestoneTotal}) must equal budget (${budget})`;
+    
+    if (!isPublic) {
+      if (!freelancer.match(/^0x[0-9a-fA-F]{40}$/)) {
+        e.freelancer = 'Enter a valid wallet address';
+      } else if (walletAddress && freelancer.toLowerCase() === walletAddress.toLowerCase()) {
+        e.freelancer = 'You cannot hire yourself';
+      }
+    }
+    
+    if (milestoneOn) {
+      if (!milestonesOk) {
+        e.milestones = `Milestone total (${milestoneTotal}) must equal budget (${budget})`;
+      } else if (milestones.some(m => !m.amount || parseFloat(m.amount) <= 0)) {
+        e.milestones = 'All milestones must have an amount greater than 0';
+      }
+    }
+    
     setErrors(e);
     return Object.keys(e).length === 0;
   };

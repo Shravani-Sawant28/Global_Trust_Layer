@@ -30,7 +30,7 @@ pub fn create_job(
 
     // ---------------- Validation ----------------
 
-    if freelancer == caller {
+    if !freelancer.is_zero() && freelancer == caller {
         return Err(EscrowError::InvalidAddress(InvalidAddress {}));
     }
 
@@ -112,7 +112,9 @@ pub fn create_job(
     // ---------------- Indexing ----------------
 
     contract.client_jobs.setter(caller).push(job_id);
-    contract.freelancer_jobs.setter(freelancer).push(job_id);
+    if !freelancer.is_zero() {
+        contract.freelancer_jobs.setter(freelancer).push(job_id);
+    }
 
     // ---------------- Emit Event ----------------
 

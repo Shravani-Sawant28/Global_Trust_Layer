@@ -2,6 +2,7 @@ import {
   useWriteContract,
   useReadContract,
   useWaitForTransactionReceipt,
+  usePublicClient,
 } from "wagmi";
 
 import { CONTRACTS } from "@/config/contracts";
@@ -38,7 +39,8 @@ const ERC20ABI = [
 ];
 
 export function useApproveUSDC() {
-  const { writeContract, data: hash, error, isPending } = useWriteContract();
+  const { writeContract, writeContractAsync, data: hash, error, isPending } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const receipt = useWaitForTransactionReceipt({
     hash,
@@ -56,8 +58,27 @@ export function useApproveUSDC() {
     });
   }
 
+  async function approveAndWait(amount) {
+    const txHash = await writeContractAsync({
+      address: CONTRACTS.USDC,
+      abi: ERC20ABI,
+      functionName: "approve",
+      args: [
+        CONTRACTS.ESCROW,
+        BigInt(amount),
+      ],
+    });
+    
+    const waitReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+    if (waitReceipt.status !== "success") {
+      throw new Error("Approval transaction failed on-chain.");
+    }
+    return waitReceipt;
+  }
+
   return {
     approve,
+    approveAndWait,
     hash,
     error,
     isPending,

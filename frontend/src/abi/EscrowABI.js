@@ -164,4 +164,11 @@ export const EscrowABI = [
       { indexed: false, name: "title", type: "string" },
     ],
   },
+  { type: "error", name: "Unauthorized", inputs: [] },
+  { type: "error", name: "JobNotFound", inputs: [] },
+  { type: "error", name: "MilestoneNotFound", inputs: [] },
+  { type: "error", name: "AlreadyReleased", inputs: [] },
+  { type: "error", name: "AlreadyFunded", inputs: [] },
+  { type: "error", name: "DisputeNotFound", inputs: [] },
+  { type: "error", name: "InvalidState", inputs: [] }
 ];
