@@ -6,6 +6,7 @@ use crate::{
     errors::{
         AlreadyDelivered,
         EscrowError,
+        InvalidState,
         JobNotFound,
         MilestoneNotFound,
         Unauthorized,
@@ -64,6 +65,10 @@ pub fn deliver_milestone(
             return Err(EscrowError::AlreadyDelivered(
                 AlreadyDelivered {},
             ));
+        }
+
+        if delivery_hash == FixedBytes::<32>::ZERO {
+            return Err(EscrowError::InvalidState(InvalidState {}));
         }
 
         milestone.delivered.set(true);

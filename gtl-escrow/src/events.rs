@@ -10,6 +10,7 @@ use alloy_sol_types::sol;
 sol! {
     // ---- Job lifecycle ----
     event JobCreated(uint256 indexed job_id, address indexed client, address indexed freelancer, uint256 total_amount, string title);
+    event JobAccepted(uint256 indexed job_id, address indexed freelancer);
     event JobFunded(uint256 indexed job_id, uint256 amount, uint64 deadline);
     event JobCompleted(uint256 indexed job_id);
     event JobCancelled(uint256 indexed job_id);

@@ -89,6 +89,13 @@ impl EscrowContract {
         )
     }
 
+    pub fn accept_job(
+        &mut self,
+        job_id: U256,
+    ) -> Result<(), EscrowError> {
+        escrow::accept_job::accept_job(self, job_id)
+    }
+
     pub fn initialize(
         &mut self,
         usdc_token: Address,
