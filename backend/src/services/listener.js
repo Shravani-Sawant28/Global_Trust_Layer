@@ -3,26 +3,26 @@
 /**
  * services/listener.js
  *
- * Blockchain event listener — subscribes to EscrowFactory events
+ * Blockchain event listener — subscribes to EscrowStylus events
  * and keeps the PostgreSQL database in sync.
  *
- * Events handled (from EscrowFactory.sol):
+ * Events handled (from Rust Stylus contract):
  *  - JobCreated         → link on_chain_job_id to the DB job record
+ *  - JobAccepted        → update freelancer on DB record
  *  - JobFunded          → update job status to 'Funded'
  *  - MilestoneDelivered → update milestone status to 'SUBMITTED'
  *  - MilestoneReleased  → update milestone to 'APPROVED', log tx
+ *  - MilestoneAutoReleased → update milestone to 'APPROVED', auto-release log
  *  - JobCompleted       → update job status to 'Complete'
- *  - ClientRefunded     → update job status to 'Refunded'
- *  - AutoReleased       → update milestone to 'APPROVED', log tx
  *  - DisputeRaised      → create or update dispute record
- *  - DisputeResolved    → resolve dispute, update milestone
+ *  - SplitProposed, DisputeResolved* → update dispute resolution status
  *
  * The listener is started from index.js after the DB is connected.
  * It is safe to call startListeners() even when contracts are not
  * configured — it will log a warning and return without throwing.
  */
 
-const { escrowContract, isContractReady, provider } = require('../config/contract');
+const contractConfig = require('../config/contract');
 const jobQueries         = require('../db/queries/jobs');
 const milestoneQueries   = require('../db/queries/milestones');
 const disputeQueries     = require('../db/queries/disputes');
@@ -50,7 +50,7 @@ function registerListeners() {
   // ── JobCreated ──────────────────────────────────────────────────
   // event JobCreated(uint256 indexed jobId, address indexed client,
   //                  address indexed freelancer, uint256 totalAmount, string title)
-  escrowContract.on('JobCreated', async (jobId, client, freelancer, totalAmount, title, event) => {
+  contractConfig.escrowContract.on('JobCreated', async (jobId, client, freelancer, totalAmount, title, event) => {
     const id   = Number(jobId);
     const txHash = event.log?.transactionHash || event.transactionHash;
 
@@ -85,8 +85,8 @@ function registerListeners() {
   });
 
   // ── JobFunded ───────────────────────────────────────────────────
-  // event JobFunded(uint256 indexed jobId, uint256 amount, uint256 deadline)
-  escrowContract.on('JobFunded', async (jobId, amount, deadline, event) => {
+  // event JobFunded(uint256 indexed job_id, uint256 amount, uint64 deadline)
+  contractConfig.escrowContract.on('JobFunded', async (jobId, amount, deadline, event) => {
     const id = Number(jobId);
     console.log(`[listener] JobFunded: on-chain jobId=${id}`);
 
@@ -110,18 +110,44 @@ function registerListeners() {
     }
   });
 
+  // ── JobAccepted ─────────────────────────────────────────────────
+  // event JobAccepted(uint256 indexed job_id, address indexed freelancer)
+  contractConfig.escrowContract.on('JobAccepted', async (jobId, freelancer, event) => {
+    const id = Number(jobId);
+    console.log(`[listener] JobAccepted: on-chain jobId=${id} freelancer=${freelancer}`);
+
+    try {
+      const dbJob = await findDbJob(id);
+      if (dbJob) {
+        await jobQueries.updateJobFreelancer(dbJob.id, freelancer.toLowerCase());
+      }
+      const txHash = event.log?.transactionHash || event.transactionHash;
+      if (txHash) {
+        await transactionQueries.logTransaction({
+          jobId: dbJob?.id || null,
+          txHash,
+          type:  'JobAccepted',
+          fromWallet: freelancer.toLowerCase(),
+          blockNumber: event.log?.blockNumber || event.blockNumber,
+        });
+      }
+    } catch (err) {
+      console.error('[listener] JobAccepted handler error:', err.message);
+    }
+  });
+
   // ── MilestoneDelivered ──────────────────────────────────────────
-  // event MilestoneDelivered(uint256 indexed jobId, uint256 milestoneIndex,
-  //                           string ipfsHash, bool late)
-  escrowContract.on('MilestoneDelivered', async (jobId, milestoneIndex, ipfsHash, late, event) => {
+  // event MilestoneDelivered(uint256 indexed job_id, uint256 milestone_id,
+  //                           bytes32 delivery_hash, bool late)
+  contractConfig.escrowContract.on('MilestoneDelivered', async (jobId, milestoneId, deliveryHash, late, event) => {
     const id  = Number(jobId);
-    const idx = Number(milestoneIndex);
+    const idx = Number(milestoneId);
     console.log(`[listener] MilestoneDelivered: jobId=${id} milestone=${idx} late=${late}`);
 
     try {
       const dbJob = await findDbJob(id);
       if (dbJob) {
-        await milestoneQueries.updateMilestoneStatus(dbJob.id, idx, 'SUBMITTED', ipfsHash || null);
+        await milestoneQueries.updateMilestoneStatus(dbJob.id, idx, 'SUBMITTED', deliveryHash || null);
         await jobQueries.updateJobStatus(dbJob.id, 'In Progress');
       }
       const txHash = event.log?.transactionHash || event.transactionHash;
@@ -139,11 +165,11 @@ function registerListeners() {
   });
 
   // ── MilestoneReleased ───────────────────────────────────────────
-  // event MilestoneReleased(uint256 indexed jobId, uint256 milestoneIndex,
-  //                          uint256 amountToFreelancer, uint256 fee)
-  escrowContract.on('MilestoneReleased', async (jobId, milestoneIndex, amountToFreelancer, fee, event) => {
+  // event MilestoneReleased(uint256 indexed job_id, uint256 milestone_id,
+  //                          uint256 amount_to_freelancer, uint256 fee)
+  contractConfig.escrowContract.on('MilestoneReleased', async (jobId, milestoneId, amountToFreelancer, fee, event) => {
     const id  = Number(jobId);
-    const idx = Number(milestoneIndex);
+    const idx = Number(milestoneId);
     console.log(`[listener] MilestoneReleased: jobId=${id} milestone=${idx}`);
 
     try {
@@ -168,7 +194,7 @@ function registerListeners() {
 
   // ── JobCompleted ────────────────────────────────────────────────
   // event JobCompleted(uint256 indexed jobId)
-  escrowContract.on('JobCompleted', async (jobId, event) => {
+  contractConfig.escrowContract.on('JobCompleted', async (jobId, event) => {
     const id = Number(jobId);
     console.log(`[listener] JobCompleted: jobId=${id}`);
 
@@ -191,40 +217,12 @@ function registerListeners() {
     }
   });
 
-  // ── ClientRefunded ──────────────────────────────────────────────
-  // event ClientRefunded(uint256 indexed jobId, uint256 milestoneIndex, uint256 amount)
-  escrowContract.on('ClientRefunded', async (jobId, milestoneIndex, amount, event) => {
+  // ── MilestoneAutoReleased ──────────────────────────────────────
+  // event MilestoneAutoReleased(uint256 indexed job_id, uint256 milestone_id, uint256 amount)
+  contractConfig.escrowContract.on('MilestoneAutoReleased', async (jobId, milestoneId, amount, event) => {
     const id  = Number(jobId);
-    const idx = Number(milestoneIndex);
-    console.log(`[listener] ClientRefunded: jobId=${id} milestone=${idx}`);
-
-    try {
-      const dbJob = await findDbJob(id);
-      if (dbJob) {
-        await milestoneQueries.updateMilestoneStatus(dbJob.id, idx, 'REFUNDED');
-        await jobQueries.updateJobStatus(dbJob.id, 'Refunded');
-      }
-      const txHash = event.log?.transactionHash || event.transactionHash;
-      if (txHash) {
-        await transactionQueries.logTransaction({
-          jobId:    dbJob?.id || null,
-          txHash,
-          type:     'ClientRefunded',
-          amountRaw: amount.toString(),
-          blockNumber: event.log?.blockNumber || event.blockNumber,
-        });
-      }
-    } catch (err) {
-      console.error('[listener] ClientRefunded handler error:', err.message);
-    }
-  });
-
-  // ── AutoReleased ────────────────────────────────────────────────
-  // event AutoReleased(uint256 indexed jobId, uint256 milestoneIndex, uint256 amount)
-  escrowContract.on('AutoReleased', async (jobId, milestoneIndex, amount, event) => {
-    const id  = Number(jobId);
-    const idx = Number(milestoneIndex);
-    console.log(`[listener] AutoReleased: jobId=${id} milestone=${idx}`);
+    const idx = Number(milestoneId);
+    console.log(`[listener] MilestoneAutoReleased: jobId=${id} milestone=${idx}`);
 
     try {
       const dbJob = await findDbJob(id);
@@ -236,23 +234,24 @@ function registerListeners() {
         await transactionQueries.logTransaction({
           jobId:    dbJob?.id || null,
           txHash,
-          type:     'AutoReleased',
+          type:     'MilestoneAutoReleased',
           amountRaw: amount.toString(),
           blockNumber: event.log?.blockNumber || event.blockNumber,
         });
       }
     } catch (err) {
-      console.error('[listener] AutoReleased handler error:', err.message);
+      console.error('[listener] MilestoneAutoReleased handler error:', err.message);
     }
   });
 
   // ── DisputeRaised ───────────────────────────────────────────────
-  // event DisputeRaised(uint256 indexed jobId, uint256 milestoneIndex,
-  //                      address raisedBy, string reason)
-  escrowContract.on('DisputeRaised', async (jobId, milestoneIndex, raisedBy, reason, event) => {
+  // event DisputeRaised(uint256 indexed dispute_id, uint256 indexed job_id,
+  //                      uint256 milestone_id, address raised_by, string reason)
+  contractConfig.escrowContract.on('DisputeRaised', async (disputeId, jobId, milestoneId, raisedBy, reason, event) => {
+    const disputeNum = Number(disputeId);
     const id  = Number(jobId);
-    const idx = Number(milestoneIndex);
-    console.log(`[listener] DisputeRaised: jobId=${id} milestone=${idx} by=${raisedBy}`);
+    const idx = Number(milestoneId);
+    console.log(`[listener] DisputeRaised: dispute=${disputeNum} jobId=${id} milestone=${idx} by=${raisedBy}`);
 
     try {
       const dbJob = await findDbJob(id);
@@ -265,6 +264,7 @@ function registerListeners() {
           await disputeQueries.createDispute({
             jobId:          dbJob.id,
             milestoneIndex: idx,
+            on_chain_dispute_id: disputeNum,
             raisedBy:       raisedBy.toLowerCase(),
             reason,
           });
@@ -286,38 +286,9 @@ function registerListeners() {
     }
   });
 
-  // ── DisputeResolved ─────────────────────────────────────────────
-  // event DisputeResolved(uint256 indexed jobId, uint256 milestoneIndex,
-  //                        uint256 clientBps, uint256 clientAmount, uint256 freelancerAmount)
-  escrowContract.on('DisputeResolved', async (jobId, milestoneIndex, clientBps, clientAmount, freelancerAmount, event) => {
-    const id  = Number(jobId);
-    const idx = Number(milestoneIndex);
-    console.log(`[listener] DisputeResolved: jobId=${id} milestone=${idx} clientBps=${clientBps}`);
-
-    try {
-      const dbJob = await findDbJob(id);
-      if (dbJob) {
-        await milestoneQueries.updateMilestoneStatus(dbJob.id, idx, 'RESOLVED');
-        const disputes = await disputeQueries.getDisputesByJobId(dbJob.id);
-        const openDispute = disputes.find((d) => d.milestone_index === idx && d.status === 'OPEN');
-        if (openDispute) {
-          await disputeQueries.updateDisputeStatus(openDispute.id, 'RESOLVED');
-        }
-      }
-      const txHash = event.log?.transactionHash || event.transactionHash;
-      if (txHash) {
-        await transactionQueries.logTransaction({
-          jobId:    dbJob?.id || null,
-          txHash,
-          type:     'DisputeResolved',
-          amountRaw: (BigInt(clientAmount.toString()) + BigInt(freelancerAmount.toString())).toString(),
-          blockNumber: event.log?.blockNumber || event.blockNumber,
-        });
-      }
-    } catch (err) {
-      console.error('[listener] DisputeResolved handler error:', err.message);
-    }
-  });
+  // NOTE: Dispute resolution is now handled by granular events:
+  // DisputeResolvedMutual, DisputeResolvedAi, DisputeResolvedJury, DisputeResolvedTimeout
+  // These can be added in the future as needed.
 
   console.log('[listener] ✅ All event listeners registered');
 }
@@ -329,7 +300,7 @@ function registerListeners() {
  * @returns {void}
  */
 function startListeners() {
-  if (!isContractReady) {
+  if (!contractConfig.isContractReady) {
     console.warn('[listener] Contracts not configured — event listeners disabled.');
     return;
   }
@@ -337,9 +308,8 @@ function startListeners() {
   try {
     registerListeners();
 
-    // Handle provider-level errors gracefully
-    if (provider) {
-      provider.on('error', (err) => {
+    if (contractConfig.provider) {
+      contractConfig.provider.on('error', (err) => {
         console.error('[listener] Provider error:', err.message);
       });
     }

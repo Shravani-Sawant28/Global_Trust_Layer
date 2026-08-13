@@ -1,0 +1,581 @@
+[
+  {
+    "type": "function",
+    "name": "createJob",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "freelancer", "type": "address" },
+      { "name": "title", "type": "string" },
+      { "name": "milestone_descriptions", "type": "string[]" },
+      { "name": "milestone_amounts", "type": "uint256[]" },
+      { "name": "duration_seconds", "type": "uint64" }
+    ],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "acceptJob",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "job_id", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "initialize",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "usdc_token", "type": "address" },
+      { "name": "gtl_token", "type": "address" },
+      { "name": "fee_recipient", "type": "address" },
+      { "name": "ai_oracle", "type": "address" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "fundJob",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "job_id", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "deliverMilestone",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "job_id", "type": "uint256" },
+      { "name": "milestone_id", "type": "uint256" },
+      { "name": "delivery_hash", "type": "bytes32" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "releaseMilestone",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "job_id", "type": "uint256" },
+      { "name": "milestone_id", "type": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "raiseDispute",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "job_id", "type": "uint256" },
+      { "name": "milestone_id", "type": "uint256" },
+      { "name": "reason", "type": "string" }
+    ],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "proposeSettlement",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256" },
+      { "name": "client_bps", "type": "uint16" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "submitAiReport",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256" },
+      { "name": "report_hash", "type": "bytes32" },
+      { "name": "confidence", "type": "uint8" },
+      { "name": "suggested_client_bps", "type": "uint16" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "acceptAiSettlement",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "dispute_id", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "registerJuror",
+    "stateMutability": "nonpayable",
+    "inputs": [],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "stake",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "amount", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "unstake",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "amount", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "escalateToJury",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "dispute_id", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "assignJurors",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256" },
+      { "name": "jurors", "type": "address[]" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "commitVote",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256" },
+      { "name": "commitment", "type": "bytes32" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "revealVote",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256" },
+      { "name": "client_bps", "type": "uint16" },
+      { "name": "freelancer_bps", "type": "uint16" },
+      { "name": "salt", "type": "bytes32" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "finalizeJury",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "dispute_id", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "forceTimeout",
+    "stateMutability": "nonpayable",
+    "inputs": [{ "name": "dispute_id", "type": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getJobCount",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "getJobBasic",
+    "stateMutability": "view",
+    "inputs": [{ "name": "job_id", "type": "uint256" }],
+    "outputs": [
+      { "type": "address" },
+      { "type": "address" },
+      { "type": "string" },
+      { "type": "uint256" },
+      { "type": "uint256" },
+      { "type": "uint8" },
+      { "type": "uint64" },
+      { "type": "uint64" },
+      { "type": "uint64" }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getMilestone",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "job_id", "type": "uint256" },
+      { "name": "milestone_id", "type": "uint256" }
+    ],
+    "outputs": [
+      { "type": "string" },
+      { "type": "uint256" },
+      { "type": "bool" },
+      { "type": "bool" },
+      { "type": "bool" },
+      { "type": "bool" },
+      { "type": "uint256" },
+      { "type": "bytes32" },
+      { "type": "uint64" },
+      { "type": "uint64" }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Unauthorized"
+  },
+  {
+    "type": "error",
+    "name": "InvalidAddress"
+  },
+  {
+    "type": "error",
+    "name": "InvalidJob"
+  },
+  {
+    "type": "error",
+    "name": "InvalidMilestone"
+  },
+  {
+    "type": "error",
+    "name": "InvalidAmount"
+  },
+  {
+    "type": "error",
+    "name": "InvalidState"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyFunded"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyReleased"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyDelivered"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyRegistered"
+  },
+  {
+    "type": "error",
+    "name": "JobNotFound"
+  },
+  {
+    "type": "error",
+    "name": "MilestoneNotFound"
+  },
+  {
+    "type": "error",
+    "name": "NotJobParty"
+  },
+  {
+    "type": "error",
+    "name": "DisputeAlreadyExists"
+  },
+  {
+    "type": "error",
+    "name": "DisputeNotFound"
+  },
+  {
+    "type": "error",
+    "name": "DisputeStageMismatch"
+  },
+  {
+    "type": "error",
+    "name": "InvalidBps"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyProposed"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyAcceptedAi"
+  },
+  {
+    "type": "error",
+    "name": "CommitWindowClosed"
+  },
+  {
+    "type": "error",
+    "name": "RevealWindowNotOpen"
+  },
+  {
+    "type": "error",
+    "name": "RevealWindowClosed"
+  },
+  {
+    "type": "error",
+    "name": "CommitmentMismatch"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyCommitted"
+  },
+  {
+    "type": "error",
+    "name": "AlreadyRevealed"
+  },
+  {
+    "type": "error",
+    "name": "DeadlockNotReached"
+  },
+  {
+    "type": "error",
+    "name": "VotingClosed"
+  },
+  {
+    "type": "error",
+    "name": "VotingNotStarted"
+  },
+  {
+    "type": "error",
+    "name": "JurorNotEligible"
+  },
+  {
+    "type": "error",
+    "name": "InsufficientStake"
+  },
+  {
+    "type": "error",
+    "name": "ArithmeticOverflow"
+  },
+  {
+    "type": "error",
+    "name": "JurorAlreadyActive"
+  },
+  {
+    "type": "error",
+    "name": "JurorNotRegistered"
+  },
+  {
+    "type": "event",
+    "name": "JobCreated",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "client", "type": "address", "indexed": true },
+      { "name": "freelancer", "type": "address", "indexed": true },
+      { "name": "total_amount", "type": "uint256", "indexed": false },
+      { "name": "title", "type": "string", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JobAccepted",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "freelancer", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JobFunded",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "deadline", "type": "uint64", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JobCompleted",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JobCancelled",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MilestoneDelivered",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "milestone_id", "type": "uint256", "indexed": false },
+      { "name": "delivery_hash", "type": "bytes32", "indexed": false },
+      { "name": "late", "type": "bool", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MilestoneReleased",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "milestone_id", "type": "uint256", "indexed": false },
+      { "name": "amount_to_freelancer", "type": "uint256", "indexed": false },
+      { "name": "fee", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MilestoneRefunded",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "milestone_id", "type": "uint256", "indexed": false },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MilestoneAutoReleased",
+    "inputs": [
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "milestone_id", "type": "uint256", "indexed": false },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeRaised",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "job_id", "type": "uint256", "indexed": true },
+      { "name": "milestone_id", "type": "uint256", "indexed": false },
+      { "name": "raised_by", "type": "address", "indexed": false },
+      { "name": "reason", "type": "string", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "SplitProposed",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "proposer", "type": "address", "indexed": true },
+      { "name": "client_bps", "type": "uint16", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeResolvedMutual",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "client_bps", "type": "uint16", "indexed": false },
+      { "name": "freelancer_bps", "type": "uint16", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "AiReportSubmitted",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "report_hash", "type": "bytes32", "indexed": false },
+      { "name": "confidence", "type": "uint8", "indexed": false },
+      { "name": "suggested_client_bps", "type": "uint16", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "AiSettlementAccepted",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "accepter", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "SettlementExecuted",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "client_bps", "type": "uint16", "indexed": false },
+      { "name": "freelancer_bps", "type": "uint16", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeResolvedAi",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "client_bps", "type": "uint16", "indexed": false },
+      { "name": "freelancer_bps", "type": "uint16", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeEscalatedToJury",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "commit_deadline", "type": "uint64", "indexed": false },
+      { "name": "reveal_deadline", "type": "uint64", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "VoteCommitted",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "juror", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "VoteRevealed",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "juror", "type": "address", "indexed": true },
+      { "name": "client_bps", "type": "uint16", "indexed": false },
+      { "name": "freelancer_bps", "type": "uint16", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeResolvedJury",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true },
+      { "name": "client_bps", "type": "uint16", "indexed": false },
+      { "name": "freelancer_bps", "type": "uint16", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "DisputeResolvedTimeout",
+    "inputs": [
+      { "name": "dispute_id", "type": "uint256", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JurorStaked",
+    "inputs": [
+      { "name": "juror", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JurorUnstaked",
+    "inputs": [
+      { "name": "juror", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JurorRewarded",
+    "inputs": [
+      { "name": "juror", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JurorSlashed",
+    "inputs": [
+      { "name": "juror", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "reason", "type": "string", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "JurorRegistered",
+    "inputs": [
+      { "name": "juror", "type": "address", "indexed": true }
+    ]
+  }
+]

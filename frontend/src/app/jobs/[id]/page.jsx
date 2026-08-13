@@ -67,9 +67,13 @@ export default function JobDetailPage() {
 
 
   const job = jobs.find((j) => String(j.id) === String(id) || String(j.onChainJobId) === String(id) || String(j.escrowId) === String(id));
-  const activeJobId = job?.onChainJobId ?? job?.on_chain_job_id ?? job?.escrowId ?? job?.id ?? (id ? Number(id) : undefined);
-
-  const { data: milestone } = useMilestone(activeJobId, 0);
+  
+  // CRITICAL: Only use blockchain job ID (onChainJobId)
+  // Do NOT fall back to database ID for blockchain calls
+  const blockchainJobId = job?.onChainJobId ?? job?.on_chain_job_id;
+  
+  // For displaying milestone data, we need the blockchain ID
+  const { data: milestone } = useMilestone(blockchainJobId, 0);
 
   useEffect(() => {
     console.log("Job Detail Context:", job);
@@ -183,47 +187,91 @@ export default function JobDetailPage() {
                 <div className="space-y-3">
                   {/* Freelancer: Accept Public Job */}
                   {isFreelancer && !job.freelancerWallet && job.status === 'Funded' && (
-                    <Button
-                      onClick={() => acceptJob(activeJobId)}
-                      loading={aj}
-                      className="w-full"
-                      id="accept-job-btn"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      Accept Job
-                    </Button>
+                    blockchainJobId ? (
+                      <Button
+                        onClick={() => {
+                          console.log("[ESCROW] Accepting job", {
+                            databaseJobId: job.id,
+                            blockchainJobId: blockchainJobId,
+                            freelancer: walletAddress,
+                          });
+                          acceptJob(blockchainJobId);
+                        }}
+                        loading={aj}
+                        className="w-full"
+                        id="accept-job-btn"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Accept Job
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled
+                        className="w-full"
+                        title="Job is not yet synchronized with blockchain"
+                      >
+                        <Clock className="h-4 w-4" />
+                        Syncing with Blockchain...
+                      </Button>
+                    )
                   )}
 
                   {/* Freelancer: Submit Work */}
                   {iAmFreelancer && job.status === 'Funded' && job.freelancerWallet && (
-                    <Button
-                      onClick={() =>
-                      deliverMilestone(
-                        activeJobId,
-                        0,
-                        "0x0000000000000000000000000000000000000000000000000000000000000000"
-                      )
-                    }
-                      loading={sw}
-                      className="w-full"
-                      id="submit-work-btn"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      Submit Work
-                    </Button>
+                    blockchainJobId ? (
+                      <Button
+                        onClick={() => {
+                          console.log("[ESCROW] Delivering milestone", {
+                            databaseJobId: job.id,
+                            blockchainJobId: blockchainJobId,
+                            milestoneIndex: 0,
+                          });
+                          deliverMilestone(
+                            blockchainJobId,
+                            0,
+                            "0x0000000000000000000000000000000000000000000000000000000000000000"
+                          );
+                        }}
+                        loading={sw}
+                        className="w-full"
+                        id="submit-work-btn"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Submit Work
+                      </Button>
+                    ) : (
+                      <Button disabled className="w-full" title="Job is not yet synchronized with blockchain">
+                        <Clock className="h-4 w-4" />
+                        Syncing with Blockchain...
+                      </Button>
+                    )
                   )}
 
                   {/* Client: Release Payment */}
                   {iAmClient && ['In Progress', 'Submitted'].includes(job.status) && (
-                    <Button
-                      onClick={() => releaseMilestone(activeJobId, 0)}
-                      loading={rp}
-                      className="w-full"
-                      id="release-payment-btn"
-                    >
-                      <Coins className="h-4 w-4" />
-                      Release Payment
-                    </Button>
+                    blockchainJobId ? (
+                      <Button
+                        onClick={() => {
+                          console.log("[ESCROW] Releasing milestone", {
+                            databaseJobId: job.id,
+                            blockchainJobId: blockchainJobId,
+                            milestoneIndex: 0,
+                          });
+                          releaseMilestone(blockchainJobId, 0);
+                        }}
+                        loading={rp}
+                        className="w-full"
+                        id="release-payment-btn"
+                      >
+                        <Coins className="h-4 w-4" />
+                        Release Payment
+                      </Button>
+                    ) : (
+                      <Button disabled className="w-full" title="Job is not yet synchronized with blockchain">
+                        <Clock className="h-4 w-4" />
+                        Syncing with Blockchain...
+                      </Button>
+                    )
                   )}
 
                   {/* Raise Dispute */}
@@ -252,19 +300,33 @@ export default function JobDetailPage() {
                             onChange={(e) => setDisputeReason(e.target.value)}
                           />
                           <div className="flex gap-2">
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              loading={rd}
-                              onClick={() => raiseDispute(
-                                              activeJobId,
-                                              0,
-                                              disputeReason
-                                            )}
-                              disabled={!disputeReason.trim()}
-                            >
-                              Confirm Dispute
-                            </Button>
+                            {blockchainJobId ? (
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                loading={rd}
+                                onClick={() => {
+                                  console.log("[ESCROW] Raising dispute", {
+                                    databaseJobId: job.id,
+                                    blockchainJobId: blockchainJobId,
+                                    milestoneIndex: 0,
+                                    reason: disputeReason,
+                                  });
+                                  raiseDispute(
+                                    blockchainJobId,
+                                    0,
+                                    disputeReason
+                                  );
+                                }}
+                                disabled={!disputeReason.trim()}
+                              >
+                                Confirm Dispute
+                              </Button>
+                            ) : (
+                              <Button disabled title="Job is not yet synchronized with blockchain">
+                                Confirm Dispute
+                              </Button>
+                            )}
                             <Button variant="ghost" size="sm" onClick={() => setShowDisputeForm(false)}>
                               Cancel
                             </Button>

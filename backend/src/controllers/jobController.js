@@ -340,7 +340,7 @@ exports.linkOnChainId = async (req, res, next) => {
     }
 
     if (job.on_chain_job_id == null) {
-      await jobQueries.linkJobToChain(id, Number(onChainJobId));
+      await jobQueries.updateJobOnChainId(id, Number(onChainJobId));
       job.on_chain_job_id = Number(onChainJobId);
     }
     

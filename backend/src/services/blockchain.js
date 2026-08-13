@@ -6,31 +6,30 @@
  * Read-only blockchain interactions via ethers.js.
  *
  * All functions call contract view functions directly from the
- * EscrowFactory and ReputationRegistry contracts.
+ * EscrowStylus (Arbitrum Stylus) and ReputationRegistry contracts.
  *
  * Function names and parameters match exactly what is defined
- * in the Solidity source:
- *  - EscrowFactory:     getJob(), getMilestone(), getMilestoneCount(),
- *                       getClientJobs(), getFreelancerJobs()
+ * in the Rust source:
+ *  - EscrowStylus:     getJobBasic(), getMilestone(), getJobCount()
  *  - ReputationRegistry: getPassport(), getTrustScore(),
  *                         getJobHistory(), isNewWallet()
  */
 
-const { escrowContract, reputationContract, isContractReady } = require('../config/contract');
+const contractConfig = require('../config/contract');
 
-// ─── JobStatus enum from EscrowFactory.sol ─────────────────
-// enum JobStatus { CREATED, FUNDED, IN_PROGRESS, COMPLETED, CANCELLED }
-const JOB_STATUS_LABELS = ['CREATED', 'FUNDED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+// ─── JobStatus enum from Stylus contract ──────────────────
+// enum JobStatus { Created = 0, Funded = 1, InProgress = 2, Completed = 3, Cancelled = 4 }
+const JOB_STATUS_LABELS = ['Created', 'Funded', 'InProgress', 'Completed', 'Cancelled'];
 
-// ─── DisputeStatus enum from EscrowFactory.sol ─────────────
-// enum DisputeStatus { NONE, DISPUTED, RESOLVED }
-const DISPUTE_STATUS_LABELS = ['NONE', 'DISPUTED', 'RESOLVED'];
+// ─── DisputeStage enum from Stylus contract ───────────────
+// enum DisputeStage { MutualSettlement, AiProposed, JurorVoting, ResolvedMutual, ResolvedAi, ResolvedJury, ResolvedTimeout }
+const DISPUTE_STAGE_LABELS = ['MutualSettlement', 'AiProposed', 'JurorVoting', 'ResolvedMutual', 'ResolvedAi', 'ResolvedJury', 'ResolvedTimeout'];
 
 /**
  * Helper: throw a clear error when contracts aren't deployed yet.
  */
 function requireReady() {
-  if (!isContractReady) {
+  if (!contractConfig.isContractReady) {
     const err = new Error('Smart contracts not configured. Set ESCROW_FACTORY_ADDRESS and REPUTATION_REGISTRY_ADDRESS in .env');
     err.statusCode = 503;
     throw err;
@@ -38,10 +37,10 @@ function requireReady() {
 }
 
 /**
- * Fetch a job from EscrowFactory.getJob(jobId).
+ * Fetch a job from EscrowStylus.getJobBasic(jobId).
  *
- * Returns: { id, client, freelancer, totalAmount, releasedAmount,
- *            status, statusLabel, title, createdAt, deadline }
+ * Returns: { id, client, freelancer, title, totalAmount, releasedAmount,
+ *            status, statusLabel, createdAt, deadline, milestoneCount }
  *
  * @param {number|bigint} jobId
  * @returns {Promise<object>}
@@ -49,94 +48,98 @@ function requireReady() {
 async function getJobFromChain(jobId) {
   requireReady();
 
-  const result = await escrowContract.getJob(BigInt(jobId));
+  const result = await contractConfig.escrowContract.getJobBasic(BigInt(jobId));
 
-  // getJob returns a tuple — destructure by position as per Solidity return order:
-  // (uint256 id, address client, address freelancer, uint256 totalAmount,
-  //  uint256 releasedAmount, JobStatus status, string title, uint256 createdAt, uint256 deadline)
+  // getJobBasic returns a tuple in this order (from Stylus contract):
+  // (address client, address freelancer, string title, uint256 total_amount,
+  //  uint256 released_amount, uint8 status, uint64 created_at, uint64 deadline, uint64 milestone_count)
   const [
-    id,
     client,
     freelancer,
+    title,
     totalAmount,
     releasedAmount,
     status,
-    title,
     createdAt,
     deadline,
+    milestoneCount,
   ] = result;
 
   return {
-    id:             Number(id),
-    client:         client.toLowerCase(),
-    freelancer:     freelancer.toLowerCase(),
-    totalAmount:    totalAmount.toString(),
-    releasedAmount: releasedAmount.toString(),
-    status:         Number(status),
-    statusLabel:    JOB_STATUS_LABELS[Number(status)] || 'UNKNOWN',
+    id:               Number(jobId),
+    client:           client.toLowerCase(),
+    freelancer:       freelancer.toLowerCase(),
     title,
-    createdAt:      Number(createdAt),
-    deadline:       Number(deadline),
+    totalAmount:      totalAmount.toString(),
+    releasedAmount:   releasedAmount.toString(),
+    status:           Number(status),
+    statusLabel:      JOB_STATUS_LABELS[Number(status)] || 'Unknown',
+    createdAt:        Number(createdAt),
+    deadline:         Number(deadline),
+    milestoneCount:   Number(milestoneCount),
   };
 }
 
 /**
- * Fetch a single milestone from EscrowFactory.getMilestone(jobId, milestoneIndex).
+ * Fetch a single milestone from EscrowStylus.getMilestone(jobId, milestoneId).
  *
- * Milestone struct fields (from Solidity):
- *  description, amount, delivered, released, late, ipfsHash,
- *  deliveredAt, disputeDeadline, disputeStatus, disputeReason,
- *  clientProposalBps, freelancerProposalBps
+ * Milestone struct fields (from Rust):
+ *  description, amount, funded, delivered, released, disputed, dispute_id,
+ *  delivery_hash, delivered_at, dispute_deadline
  *
  * @param {number|bigint} jobId
- * @param {number|bigint} milestoneIndex
+ * @param {number|bigint} milestoneId
  * @returns {Promise<object>}
  */
-async function getMilestoneFromChain(jobId, milestoneIndex) {
+async function getMilestoneFromChain(jobId, milestoneId) {
   requireReady();
 
-  const m = await escrowContract.getMilestone(BigInt(jobId), BigInt(milestoneIndex));
+  const m = await contractConfig.escrowContract.getMilestone(BigInt(jobId), BigInt(milestoneId));
+
+  // getMilestone returns a tuple in this order:
+  // (string description, uint256 amount, bool funded, bool delivered, bool released,
+  //  bool disputed, uint256 dispute_id, bytes32 delivery_hash, uint64 delivered_at,
+  //  uint64 dispute_deadline)
+  const [
+    description,
+    amount,
+    funded,
+    delivered,
+    released,
+    disputed,
+    disputeId,
+    deliveryHash,
+    deliveredAt,
+    disputeDeadline,
+  ] = m;
 
   return {
-    description:          m.description,
-    amount:               m.amount.toString(),
-    delivered:            m.delivered,
-    released:             m.released,
-    late:                 m.late,
-    ipfsHash:             m.ipfsHash,
-    deliveredAt:          Number(m.deliveredAt),
-    disputeDeadline:      Number(m.disputeDeadline),
-    disputeStatus:        Number(m.disputeStatus),
-    disputeStatusLabel:   DISPUTE_STATUS_LABELS[Number(m.disputeStatus)] || 'NONE',
-    disputeReason:        m.disputeReason,
-    clientProposalBps:    m.clientProposalBps.toString(),
-    freelancerProposalBps: m.freelancerProposalBps.toString(),
+    description,
+    amount:           amount.toString(),
+    funded,
+    delivered,
+    released,
+    disputed,
+    disputeId:        Number(disputeId),
+    deliveryHash,
+    deliveredAt:      Number(deliveredAt),
+    disputeDeadline:  Number(disputeDeadline),
   };
 }
 
 /**
- * Fetch the count of milestones for a job.
- * Calls EscrowFactory.getMilestoneCount(jobId).
- *
- * @param {number|bigint} jobId
- * @returns {Promise<number>}
- */
-async function getMilestoneCount(jobId) {
-  requireReady();
-  const count = await escrowContract.getMilestoneCount(BigInt(jobId));
-  return Number(count);
-}
-
-/**
- * Fetch all milestone indices for a job and return full milestone data.
- * Iterates getMilestoneCount → getMilestone for each index.
+ * Fetch all milestones for a job.
+ * Uses the milestone_count from getJobBasic → calls getMilestone for each index.
  *
  * @param {number|bigint} jobId
  * @returns {Promise<object[]>}
  */
 async function getAllMilestonesFromChain(jobId) {
   requireReady();
-  const count = await getMilestoneCount(jobId);
+  
+  const jobData = await getJobFromChain(jobId);
+  const count = jobData.milestoneCount;
+  
   const promises = [];
   for (let i = 0; i < count; i++) {
     promises.push(getMilestoneFromChain(jobId, i));
@@ -208,7 +211,7 @@ async function getJobHistoryFromChain(wallet) {
  */
 async function getClientJobsFromChain(wallet) {
   requireReady();
-  const ids = await escrowContract.getClientJobs(wallet);
+  const ids = await contractConfig.escrowContract.getClientJobs(wallet);
   return ids.map(Number);
 }
 
@@ -221,7 +224,7 @@ async function getClientJobsFromChain(wallet) {
  */
 async function getFreelancerJobsFromChain(wallet) {
   requireReady();
-  const ids = await escrowContract.getFreelancerJobs(wallet);
+  const ids = await contractConfig.escrowContract.getFreelancerJobs(wallet);
   return ids.map(Number);
 }
 
@@ -240,14 +243,11 @@ async function isNewWallet(wallet) {
 module.exports = {
   getJobFromChain,
   getMilestoneFromChain,
-  getMilestoneCount,
   getAllMilestonesFromChain,
   getPassportFromChain,
   getTrustScoreFromChain,
   getJobHistoryFromChain,
-  getClientJobsFromChain,
-  getFreelancerJobsFromChain,
   isNewWallet,
   JOB_STATUS_LABELS,
-  DISPUTE_STATUS_LABELS,
+  DISPUTE_STAGE_LABELS,
 };

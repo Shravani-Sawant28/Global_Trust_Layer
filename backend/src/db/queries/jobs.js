@@ -189,6 +189,23 @@ async function assignFreelancer(id, freelancerWallet) {
   );
 }
 
+/**
+ * Update the freelancer for a job (called by blockchain event listener).
+ * Used when JobAccepted event is received.
+ *
+ * @param {number} id
+ * @param {string} freelancerWallet
+ * @returns {Promise<void>}
+ */
+async function updateJobFreelancer(id, freelancerWallet) {
+  await pool.query(
+    `UPDATE jobs
+     SET freelancer_wallet = $2, updated_at = NOW()
+     WHERE id = $1`,
+    [id, freelancerWallet.toLowerCase()]
+  );
+}
+
 module.exports = {
   createJob,
   getJobById,
@@ -198,4 +215,5 @@ module.exports = {
   updateJobStatus,
   updateJobOnChainId,
   assignFreelancer,
+  updateJobFreelancer,
 };

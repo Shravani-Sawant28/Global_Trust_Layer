@@ -4,7 +4,7 @@
  * config/contract.js
  *
  * Initialises read-only ethers.js contract instances for:
- *  - EscrowFactory
+ *  - EscrowStylus (Arbitrum Stylus escrow contract)
  *  - ReputationRegistry
  *
  * The provider is a JsonRpcProvider pointed at RPC_URL.
@@ -12,11 +12,10 @@
  * from the user's wallet via the frontend.
  *
  * Contract addresses come from environment variables:
- *  ESCROW_FACTORY_ADDRESS
+ *  ESCROW_FACTORY_ADDRESS (now points to new Stylus contract)
  *  REPUTATION_REGISTRY_ADDRESS
  *
- * ABIs are loaded from the /abis directory (populated after
- * `npx hardhat compile`).
+ * ABIs are loaded from the /abis directory.
  */
 
 const { ethers } = require('ethers');
@@ -66,7 +65,7 @@ function initContracts() {
       return;
     }
 
-    const escrowAbi    = loadAbi('EscrowFactory.json');
+    const escrowAbi    = loadAbi('EscrowStylus.json');
     const reputationAbi = loadAbi('ReputationRegistry.json');
 
     escrowContract     = new ethers.Contract(escrowAddress,     escrowAbi,     provider);
@@ -74,7 +73,7 @@ function initContracts() {
     isContractReady    = true;
 
     console.log('[contracts] ✅ Contract instances initialised');
-    console.log('[contracts]    EscrowFactory:      ', escrowAddress);
+    console.log('[contracts]    EscrowStylus:       ', escrowAddress);
     console.log('[contracts]    ReputationRegistry: ', reputationAddress);
   } catch (err) {
     console.error('[contracts] Failed to initialise contracts:', err.message);
